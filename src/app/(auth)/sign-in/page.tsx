@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -18,23 +19,25 @@ export default function SignInPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Mock authentication - in real app this would be an API call
-    setTimeout(() => {
-      if (email && password) {
-        // Set demo user in localStorage
-        localStorage.setItem("demo-user", JSON.stringify({
-          id: "demo-user",
-          email,
-          name: email.split("@")[0]
-        }));
+    try {
+      const result = await authClient.signIn.email({
+        email,
+        password,
+        callbackURL: "/w/demo/dashboard"
+      });
 
+      if (result.error) {
+        toast.error(result.error.message);
+      } else {
         toast.success("Signed in successfully!");
         router.push("/w/demo/dashboard");
-      } else {
-        toast.error("Please fill in all fields");
       }
+    } catch (error) {
+      toast.error("An error occurred during sign in");
+      console.error("Sign in error:", error);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -86,11 +89,6 @@ export default function SignInPage() {
             </Link>
           </div>
 
-          <div className="mt-4 p-3 bg-muted rounded-md">
-            <p className="text-xs text-muted-foreground">
-              <strong>Demo:</strong> Use any email and password to sign in (demo mode)
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

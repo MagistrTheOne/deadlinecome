@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppTopbar } from "@/components/layout/app-topbar";
+import { AuthGuard } from "@/features/auth/components/auth-guard";
 
 export default function DashboardLayout({
   children,
@@ -16,18 +17,20 @@ export default function DashboardLayout({
   const workspaceId = "demo";
 
   return (
-    <div className="flex h-screen bg-background">
-      <AppSidebar
-        workspaceId={workspaceId}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AppTopbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-auto p-6">
-          {children}
-        </main>
+    <AuthGuard>
+      <div className="flex h-screen bg-background">
+        <AppSidebar
+          workspaceId={workspaceId}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AppTopbar onMenuClick={() => setSidebarOpen(true)} />
+          <main className="flex-1 overflow-auto p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

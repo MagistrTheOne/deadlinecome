@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -18,20 +19,34 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+
     setIsLoading(true);
 
-    // Mock registration - in real app this would be an API call
-    setTimeout(() => {
-      if (name && email && password && password === confirmPassword) {
-        toast.success("Account created successfully!");
-        router.push("/sign-in");
-      } else if (password !== confirmPassword) {
-        toast.error("Passwords don't match");
+    try {
+      const result = await authClient.signUp.email({
+        email,
+        password,
+        name,
+        callbackURL: "/w/demo/dashboard"
+      });
+
+      if (result.error) {
+        toast.error(result.error.message);
       } else {
-        toast.error("Please fill in all fields");
+        toast.success("Account created successfully!");
+        router.push("/w/demo/dashboard");
       }
+    } catch (error) {
+      toast.error("An error occurred during sign up");
+      console.error("Sign up error:", error);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
