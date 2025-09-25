@@ -23,7 +23,7 @@ interface ActivityItem {
   title: string;
   description: string;
   user: string;
-  timestamp: Date;
+  timestamp: Date | string;
   project?: string;
   priority?: "low" | "medium" | "high";
 }
@@ -123,9 +123,10 @@ export function ActivityFeed() {
     }
   };
 
-  const formatTimeAgo = (timestamp: Date) => {
+  const formatTimeAgo = (timestamp: Date | string) => {
     const now = new Date();
-    const diff = now.getTime() - timestamp.getTime();
+    const timestampDate = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    const diff = now.getTime() - timestampDate.getTime();
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -141,7 +142,7 @@ export function ActivityFeed() {
 
   const filteredActivities = activities.filter(activity => {
     const now = new Date();
-    const activityDate = activity.timestamp;
+    const activityDate = activity.timestamp instanceof Date ? activity.timestamp : new Date(activity.timestamp);
     
     switch (filter) {
       case "today":

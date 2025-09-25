@@ -11,8 +11,13 @@ import {
   RefreshCw,
   Zap,
   Globe,
-  Shield
+  Shield,
+  Activity,
+  TrendingUp,
+  Users
 } from "lucide-react";
+import { VasilyStatusSystem } from "@/lib/ai/vasily-status-system";
+import { ActivityMonitor } from "@/lib/ai/activity-monitor";
 
 interface AIStatus {
   primary: string;
@@ -32,6 +37,8 @@ interface AIStatus {
 
 export function AIStatus() {
   const [status, setStatus] = useState<AIStatus | null>(null);
+  const [vasilyStatus, setVasilyStatus] = useState(VasilyStatusSystem.getCurrentStatus());
+  const [teamMetrics, setTeamMetrics] = useState(ActivityMonitor.getDashboardMetrics());
   const [loading, setLoading] = useState(true);
 
   const fetchStatus = async () => {
@@ -49,8 +56,18 @@ export function AIStatus() {
     }
   };
 
+  const updateVasilyStatus = () => {
+    setVasilyStatus(VasilyStatusSystem.getCurrentStatus());
+    setTeamMetrics(ActivityMonitor.getDashboardMetrics());
+  };
+
   useEffect(() => {
     fetchStatus();
+    updateVasilyStatus();
+
+    // Обновляем статус Василия каждые 30 секунд
+    const interval = setInterval(updateVasilyStatus, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -102,14 +119,17 @@ export function AIStatus() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={fetchStatus}
+            onClick={() => {
+              fetchStatus();
+              updateVasilyStatus();
+            }}
             className="text-white/60 hover:text-white"
           >
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
         <CardDescription className="text-white/70">
-          {status?.vasily?.statusMessage || "Статус AI-сервисов"}
+          {vasilyStatus.description}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -142,30 +162,82 @@ export function AIStatus() {
         </div>
 
         {/* Статус Василия */}
-        {status?.vasily && (
-          <div className="space-y-3 pt-2 border-t border-white/10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{status.vasily.emoji}</span>
-                <div>
-                  <p className="text-white text-sm font-medium">
-                    Настроение: {status.vasily.mood}
-                  </p>
-                  <p className="text-white/60 text-xs">
-                    Память: {status.vasily.memoryStats.totalMemories} воспоминаний
-                  </p>
-                </div>
+        <div className="space-y-3 pt-2 border-t border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{vasilyStatus.emoji}</span>
+              <div>
+                <p className="text-white text-sm font-medium">
+                  Статус Василия: {vasilyStatus.name}
+                </p>
+                <p className="text-white/60 text-xs">
+                  Активность: {vasilyStatus.activity}
+                </p>
               </div>
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                Онлайн
-              </Badge>
             </div>
-            
-            <div className="text-white/70 text-sm italic">
-              "{status.vasily.statusMessage}"
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+              Онлайн
+            </Badge>
+          </div>
+          
+          <div className="text-white/70 text-sm italic">
+            "{vasilyStatus.context}"
+          </div>
+
+          {/* Метрики команды */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="flex items-center gap-2">
+              <Activity className="h-3 w-3 text-blue-400" />
+              <div>
+                <p className="text-white/60 text-xs">Продуктивность</p>
+                <p className="text-white text-sm font-medium">
+                  {Math.round(teamMetrics.productivity * 100)}%
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-3 w-3 text-green-400" />
+              <div>
+                <p className="text-white/60 text-xs">Качество</p>
+                <p className="text-white text-sm font-medium">
+                  {Math.round(teamMetrics.quality * 100)}%
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="h-3 w-3 text-yellow-400" />
+              <div>
+                <p className="text-white/60 text-xs">Счастье</p>
+                <p className="text-white text-sm font-medium">
+                  {Math.round(teamMetrics.teamHappiness * 100)}%
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="h-3 w-3 text-purple-400" />
+              <div>
+                <p className="text-white/60 text-xs">Нагрузка</p>
+                <p className="text-white text-sm font-medium">
+                  {Math.round(teamMetrics.workload * 100)}%
+                </p>
+              </div>
             </div>
           </div>
-        )}
+
+          {/* Рекомендации */}
+          {teamMetrics.recommendations.length > 0 && (
+            <div className="pt-2 border-t border-white/10">
+              <p className="text-white/60 text-xs mb-2">Рекомендации:</p>
+              <div className="space-y-1">
+                {teamMetrics.recommendations.slice(0, 2).map((rec, index) => (
+                  <p key={index} className="text-white/70 text-xs">
+                    • {rec}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Статус подключения */}
         <div className="flex items-center gap-2">

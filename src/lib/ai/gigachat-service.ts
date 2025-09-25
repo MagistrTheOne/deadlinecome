@@ -35,10 +35,10 @@ interface GigaChatResponse {
 export class GigaChatService {
   private accessToken: string | null = null;
   private tokenExpiresAt: number = 0;
-  private readonly baseUrl = process.env.GIGACHAT_BASE_URL || "https://gigachat.devices.sberbank.ru/api/v1";
-  private readonly apiKey = process.env.GIGACHAT_API_KEY;
-  private readonly authToken = process.env.GIGACHAT_AUTH_TOKEN;
-  private readonly scope = process.env.GIGACHAT_SCOPE || "GIGACHAT_API_PERS";
+  private readonly baseUrl = "https://gigachat.devices.sberbank.ru/api/v1";
+  private readonly authUrl = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth";
+  private readonly authKey = process.env.GIGACHAT_AUTH_KEY || "MDE5OTgyNGItNGMxZS03ZWYxLWI0MjMtYmIzMTU2ZGRlY2VlOmQyMWFjYjkzLWQzMTctNDNjMC04N2FlLWFkMzEyNmIwYjBiZA==";
+  private readonly scope = "GIGACHAT_API_PERS";
 
   /**
    * Получение токена доступа для GigaChat API
@@ -49,37 +49,29 @@ export class GigaChatService {
       return this.accessToken;
     }
 
-    if (!this.authToken) {
-      throw new Error("GigaChat auth token не настроен");
+    if (!this.authKey) {
+      throw new Error("GigaChat auth key не настроен");
     }
 
     try {
-      // Для Node.js окружения отключаем проверку SSL
       const fetchOptions: RequestInit = {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           "Accept": "application/json",
           "RqUID": this.generateRqUID(),
-          "Authorization": `Bearer ${this.authToken}`,
+          "Authorization": `Basic ${this.authKey}`,
         },
         body: new URLSearchParams({
           scope: this.scope,
         }),
       };
 
-      // В Node.js окружении добавляем опции для игнорирования SSL
-      if (typeof window === 'undefined') {
-        // @ts-ignore
-        fetchOptions.agent = new (require('https').Agent)({
-          rejectUnauthorized: false
-        });
-      }
-
-      const response = await fetch("https://ngw.devices.sberbank.ru:9443/api/v2/oauth", fetchOptions);
+      const response = await fetch(this.authUrl, fetchOptions);
 
       if (!response.ok) {
-        throw new Error(`Ошибка авторизации GigaChat: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Ошибка авторизации GigaChat: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       const data: GigaChatAuthResponse = await response.json();

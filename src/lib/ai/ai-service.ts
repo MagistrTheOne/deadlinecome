@@ -1,5 +1,4 @@
 import { gigaChatService } from "./gigachat-service";
-import { OpenAIService } from "./openai-service";
 
 export interface TaskContext {
   id: string;
@@ -27,10 +26,8 @@ export interface AIResponse {
 }
 
 export class AIService {
-  private static useGigaChat = true; // Приоритет GigaChat
-
   /**
-   * Универсальный чат с AI
+   * Универсальный чат с AI (только GigaChat)
    */
   static async chat(
     messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
@@ -40,23 +37,10 @@ export class AIService {
     }
   ): Promise<string> {
     try {
-      if (this.useGigaChat) {
-        return await gigaChatService.chat(messages, options);
-      } else {
-        // Fallback на OpenAI
-        return await OpenAIService.chat(messages, options);
-      }
+      return await gigaChatService.chat(messages, options);
     } catch (error) {
-      console.error("Ошибка основного AI сервиса:", error);
-      
-      // Переключаемся на fallback
-      if (this.useGigaChat) {
-        console.log("Переключение на OpenAI fallback");
-        this.useGigaChat = false;
-        return await OpenAIService.chat(messages, options);
-      } else {
-        throw error;
-      }
+      console.error("Ошибка GigaChat API:", error);
+      throw new Error("Не удалось получить ответ от Василия (GigaChat)");
     }
   }
 
@@ -77,20 +61,10 @@ export class AIService {
     reasoning: string;
   }> {
     try {
-      if (this.useGigaChat) {
-        return await gigaChatService.createTasksFromDescription(projectDescription, existingTasks);
-      } else {
-        return await OpenAIService.createTasksFromDescription(projectDescription, existingTasks);
-      }
+      return await gigaChatService.createTasksFromDescription(projectDescription, existingTasks);
     } catch (error) {
       console.error("Ошибка создания задач:", error);
-      
-      if (this.useGigaChat) {
-        this.useGigaChat = false;
-        return await OpenAIService.createTasksFromDescription(projectDescription, existingTasks);
-      } else {
-        throw error;
-      }
+      throw error;
     }
   }
 
@@ -103,20 +77,10 @@ export class AIService {
     estimatedTotalHours: number;
   }> {
     try {
-      if (this.useGigaChat) {
-        return await gigaChatService.analyzeTaskTime(tasks);
-      } else {
-        return await OpenAIService.analyzeTaskTime(tasks);
-      }
+      return await gigaChatService.analyzeTaskTime(tasks);
     } catch (error) {
       console.error("Ошибка анализа времени:", error);
-      
-      if (this.useGigaChat) {
-        this.useGigaChat = false;
-        return await OpenAIService.analyzeTaskTime(tasks);
-      } else {
-        throw error;
-      }
+      throw error;
     }
   }
 
@@ -130,20 +94,10 @@ export class AIService {
     nextSteps: string[];
   }> {
     try {
-      if (this.useGigaChat) {
-        return await gigaChatService.generateProjectReport(projectData);
-      } else {
-        return await OpenAIService.generateProjectReport(projectData);
-      }
+      return await gigaChatService.generateProjectReport(projectData);
     } catch (error) {
       console.error("Ошибка генерации отчета:", error);
-      
-      if (this.useGigaChat) {
-        this.useGigaChat = false;
-        return await OpenAIService.generateProjectReport(projectData);
-      } else {
-        throw error;
-      }
+      throw error;
     }
   }
 
@@ -160,67 +114,23 @@ export class AIService {
     reasoning: string;
   }> {
     try {
-      if (this.useGigaChat) {
-        return await gigaChatService.getSmartSuggestions(projectContext);
-      } else {
-        return await OpenAIService.getSmartSuggestions(projectContext);
-      }
+      return await gigaChatService.getSmartSuggestions(projectContext);
     } catch (error) {
       console.error("Ошибка получения предложений:", error);
-      
-      if (this.useGigaChat) {
-        this.useGigaChat = false;
-        return await OpenAIService.getSmartSuggestions(projectContext);
-      } else {
-        throw error;
-      }
+      throw error;
     }
-  }
-
-  /**
-   * Генерация эмбеддингов (только OpenAI)
-   */
-  static async generateEmbedding(text: string): Promise<number[]> {
-    return await OpenAIService.generateEmbedding(text);
-  }
-
-  /**
-   * Поиск похожих задач (только OpenAI)
-   */
-  static async findSimilarTasks(
-    query: string, 
-    tasks: TaskContext[], 
-    threshold: number = 0.8
-  ): Promise<TaskContext[]> {
-    return await OpenAIService.findSimilarTasks(query, tasks, threshold);
   }
 
   /**
    * Получение статуса AI сервиса
    */
   static getServiceStatus(): {
-    primary: string;
-    fallback: string;
-    isUsingPrimary: boolean;
+    service: string;
+    status: string;
   } {
     return {
-      primary: "GigaChat",
-      fallback: "OpenAI",
-      isUsingPrimary: this.useGigaChat,
+      service: "GigaChat (Василий)",
+      status: "Активен",
     };
-  }
-
-  /**
-   * Принудительное переключение на GigaChat
-   */
-  static forceGigaChat(): void {
-    this.useGigaChat = true;
-  }
-
-  /**
-   * Принудительное переключение на OpenAI
-   */
-  static forceOpenAI(): void {
-    this.useGigaChat = false;
   }
 }
