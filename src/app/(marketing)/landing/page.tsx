@@ -133,30 +133,61 @@ const pricingPlans = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-white/10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-black font-bold text-lg">D</span>
+              </div>
+              <span className="text-xl font-bold text-white">DeadLine</span>
+            </div>
+            
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-white hover:text-white/80 transition-colors">Возможности</a>
+              <a href="#pricing" className="text-white hover:text-white/80 transition-colors">Тарифы</a>
+              <a href="/billing" className="text-white hover:text-white/80 transition-colors">Биллинг</a>
+              <a href="#contact" className="text-white hover:text-white/80 transition-colors">Контакты</a>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" asChild>
+                <Link href="/sign-in">Войти</Link>
+              </Button>
+              <Button variant="default" asChild>
+                <Link href="/sign-up">Начать бесплатно</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-black to-gray-900"></div>
+      <section className="relative overflow-hidden pt-20">
+        <div className="absolute inset-0 bg-black"></div>
         <div className="relative container mx-auto px-4 py-20">
           <div className="text-center max-w-4xl mx-auto">
-            <Badge className="bg-analytics-violet/20 text-analytics-violet border-analytics-violet/30 mb-6">
+            <Badge className="bg-white/10 text-white border-white/20 mb-6 backdrop-blur-sm">
               <Sparkles className="w-3 h-3 mr-1" />
               Новая эра управления проектами
             </Badge>
             
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white to-gray-300 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
               DeadLine
             </h1>
             
-            <p className="text-xl md:text-2xl text-white/80 mb-8 leading-relaxed">
+            <p className="text-xl md:text-2xl text-white mb-8 leading-relaxed">
               AI-управляемая платформа для команд, которая превращает хаос в порядок. 
               <br />
-              <span className="text-analytics-cyan">Умная автоматизация</span> + <span className="text-analytics-emerald">Предиктивная аналитика</span> + <span className="text-analytics-violet">Real-time коллаборация</span>
+              <span className="text-white font-semibold">Умная автоматизация</span> + <span className="text-white font-semibold">Предиктивная аналитика</span> + <span className="text-white font-semibold">Real-time коллаборация</span>
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 size="lg" 
-                className="bg-analytics-violet hover:bg-analytics-violet/80 text-white px-8 py-4 text-lg font-semibold"
+                variant="default"
+                className="px-8 py-4 text-lg font-semibold"
                 asChild
               >
                 <Link href="/sign-up">
@@ -168,7 +199,7 @@ export default function LandingPage() {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="border-white/20 text-white hover:bg-white/10 px-8 py-4 text-lg"
+                className="px-8 py-4 text-lg"
                 asChild
               >
                 <Link href="#demo">
@@ -185,13 +216,13 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-black/50">
+      <section id="features" className="py-20 bg-black">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Мощные возможности для <span className="text-analytics-cyan">современных команд</span>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+              Мощные возможности для <span className="text-white font-bold">современных команд</span>
             </h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
+            <p className="text-xl text-white max-w-3xl mx-auto">
               От AI-автоматизации до предиктивной аналитики — все инструменты, 
               которые нужны вашей команде для достижения целей
             </p>
@@ -199,20 +230,20 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="bg-glass-dark backdrop-blur-sm border-white/10 hover:border-white/20 transition-all duration-300 group">
+              <Card key={index} className="bg-black/50 backdrop-blur-sm border-white/20 hover:border-white/40 transition-all duration-300 group hover:bg-black/70">
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-analytics-violet/20 rounded-lg group-hover:bg-analytics-violet/30 transition-colors">
-                      <feature.icon className="h-6 w-6 text-analytics-violet" />
+                    <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                      <feature.icon className="h-6 w-6 text-white" />
                     </div>
-                    <Badge className="bg-analytics-cyan/20 text-analytics-cyan border-analytics-cyan/30 text-xs">
+                    <Badge className="bg-white/10 text-white border-white/20 text-xs">
                       {feature.category}
                     </Badge>
                   </div>
                   <CardTitle className="text-white text-xl">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-white/70 text-base leading-relaxed">
+                  <CardDescription className="text-white text-base leading-relaxed">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
@@ -223,13 +254,13 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-black">
+      <section id="pricing" className="py-20 bg-black">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Простые и <span className="text-analytics-emerald">прозрачные</span> тарифы
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+              Простые и <span className="text-white font-bold">прозрачные</span> тарифы
             </h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto">
+            <p className="text-xl text-white max-w-2xl mx-auto">
               Выберите план, который подходит вашей команде. 
               Всегда можно изменить или отменить в любой момент.
             </p>
@@ -239,15 +270,15 @@ export default function LandingPage() {
             {pricingPlans.map((plan, index) => (
               <Card 
                 key={index} 
-                className={`relative bg-glass-dark backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
+                className={`relative bg-black/50 backdrop-blur-sm border transition-all duration-300 hover:scale-105 ${
                   plan.popular 
-                    ? 'border-analytics-violet/50 shadow-2xl shadow-analytics-violet/20' 
-                    : 'border-white/10 hover:border-white/20'
+                    ? 'border-white/50 shadow-2xl shadow-white/10' 
+                    : 'border-white/20 hover:border-white/40'
                 }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-analytics-violet text-white px-4 py-1">
+                    <Badge className="bg-white text-black px-4 py-1">
                       <Crown className="w-3 h-3 mr-1" />
                       Популярный
                     </Badge>
@@ -257,16 +288,14 @@ export default function LandingPage() {
                 <CardHeader className="text-center pb-8">
                   <div className="flex justify-center mb-4">
                     <div className={`p-3 rounded-full ${
-                      plan.popular ? 'bg-analytics-violet/20' : 'bg-white/10'
+                      plan.popular ? 'bg-white/20' : 'bg-white/10'
                     }`}>
-                      <plan.icon className={`h-8 w-8 ${
-                        plan.popular ? 'text-analytics-violet' : 'text-white'
-                      }`} />
+                      <plan.icon className="h-8 w-8 text-white" />
                     </div>
                   </div>
                   
                   <CardTitle className="text-2xl text-white">{plan.name}</CardTitle>
-                  <CardDescription className="text-white/70 mb-4">
+                  <CardDescription className="text-white mb-4">
                     {plan.description}
                   </CardDescription>
                   
@@ -278,11 +307,8 @@ export default function LandingPage() {
 
                 <CardContent>
                   <Button 
-                    className={`w-full mb-6 ${
-                      plan.popular 
-                        ? 'bg-analytics-violet hover:bg-analytics-violet/80' 
-                        : 'bg-white/10 hover:bg-white/20 border border-white/20'
-                    } text-white`}
+                    variant={plan.popular ? "default" : "glass"}
+                    className="w-full mb-6"
                     size="lg"
                     asChild
                   >
@@ -296,8 +322,8 @@ export default function LandingPage() {
                     <ul className="space-y-2">
                       {plan.features.map((feature, featureIndex) => (
                         <li key={featureIndex} className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-analytics-emerald mt-0.5 flex-shrink-0" />
-                          <span className="text-white/80 text-sm">{feature}</span>
+                          <Check className="h-4 w-4 text-white mt-0.5 flex-shrink-0" />
+                          <span className="text-white text-sm">{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -340,12 +366,12 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-analytics-violet/10 to-analytics-cyan/10">
+      <section id="contact" className="py-20 bg-black">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Готовы <span className="text-analytics-emerald">революционизировать</span> управление проектами?
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+            Готовы <span className="text-white font-bold">революционизировать</span> управление проектами?
           </h2>
-          <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
             Присоединяйтесь к тысячам команд, которые уже используют DeadLine 
             для достижения своих целей быстрее и эффективнее.
           </p>
@@ -353,7 +379,8 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               size="lg" 
-              className="bg-analytics-violet hover:bg-analytics-violet/80 text-white px-8 py-4 text-lg font-semibold"
+              variant="default"
+              className="px-8 py-4 text-lg font-semibold"
               asChild
             >
               <Link href="/sign-up">
@@ -365,7 +392,7 @@ export default function LandingPage() {
             <Button 
               variant="outline" 
               size="lg"
-              className="border-white/20 text-white hover:bg-white/10 px-8 py-4 text-lg"
+              className="px-8 py-4 text-lg"
               asChild
             >
               <Link href="/demo">
@@ -375,6 +402,71 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-black border-t border-white/10 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="md:col-span-2">
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                  <span className="text-black font-bold text-lg">D</span>
+                </div>
+                <span className="text-xl font-bold text-white">DeadLine</span>
+              </div>
+              <p className="text-white/70 mb-4 max-w-md">
+                AI-управляемая платформа для команд, которая превращает хаос в порядок. 
+                Умная автоматизация, предиктивная аналитика и real-time коллаборация.
+              </p>
+              <div className="flex space-x-4">
+                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
+                  Twitter
+                </Button>
+                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
+                  LinkedIn
+                </Button>
+                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
+                  GitHub
+                </Button>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-white font-semibold mb-4">Продукт</h3>
+              <ul className="space-y-2">
+                <li><a href="#features" className="text-white/70 hover:text-white transition-colors">Возможности</a></li>
+                <li><a href="#pricing" className="text-white/70 hover:text-white transition-colors">Тарифы</a></li>
+                <li><a href="/billing" className="text-white/70 hover:text-white transition-colors">Биллинг</a></li>
+                <li><a href="/demo" className="text-white/70 hover:text-white transition-colors">Демо</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-white font-semibold mb-4">Поддержка</h3>
+              <ul className="space-y-2">
+                <li><a href="/help" className="text-white/70 hover:text-white transition-colors">Помощь</a></li>
+                <li><a href="/docs" className="text-white/70 hover:text-white transition-colors">Документация</a></li>
+                <li><a href="/contact" className="text-white/70 hover:text-white transition-colors">Контакты</a></li>
+                <li><a href="/status" className="text-white/70 hover:text-white transition-colors">Статус</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-white/10 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-white/60 text-sm">
+              © 2024 DeadLine. Все права защищены.
+            </p>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <a href="/privacy" className="text-white/60 hover:text-white text-sm transition-colors">
+                Политика конфиденциальности
+              </a>
+              <a href="/terms" className="text-white/60 hover:text-white text-sm transition-colors">
+                Условия использования
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
