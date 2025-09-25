@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -34,11 +35,9 @@ import {
   BarChart3
 } from "lucide-react";
 
-interface ReportsPageProps {
-  params: { workspaceId: string };
-}
-
-export default function ReportsPage({ params }: ReportsPageProps) {
+export default function ReportsPage() {
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
   const [projects, setProjects] = useState<Project[]>([]);
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +69,7 @@ export default function ReportsPage({ params }: ReportsPageProps) {
     };
 
     loadData();
-  }, [params.workspaceId]);
+  }, [workspaceId]);
 
   // Calculate metrics
   const totalIssues = allIssues.length;
@@ -221,7 +220,7 @@ export default function ReportsPage({ params }: ReportsPageProps) {
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
                   {statusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />

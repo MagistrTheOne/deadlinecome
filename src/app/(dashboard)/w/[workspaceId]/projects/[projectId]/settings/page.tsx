@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Users, Archive, Trash2 } from "lucide-react";
 
-export default function ProjectSettingsPage({ params }: { params: { workspaceId: string; projectId: string } }) {
+export default async function ProjectSettingsPage({ params }: { params: Promise<{ workspaceId: string; projectId: string }> }) {
+  const { workspaceId, projectId } = await params;
   return (
     <div className="space-y-6">
       <div>

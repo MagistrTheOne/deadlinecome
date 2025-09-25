@@ -6,8 +6,9 @@ import { seedMembers } from "@/data/seed";
 import { UserPlus, Mail, Shield, Settings, Trash2 } from "lucide-react";
 import { usePermissions } from "@/hooks/use-permissions";
 
-export default function MembersPage({ params }: { params: { workspaceId: string } }) {
-  const members = seedMembers.filter(m => m.workspaceId === params.workspaceId);
+export default async function MembersPage({ params }: { params: Promise<{ workspaceId: string }> }) {
+  const { workspaceId } = await params;
+  const members = seedMembers.filter(m => m.workspaceId === workspaceId);
 
   // Mock current user - in real app this would come from auth context
   const currentMember = members.find(m => m.userId === "demo-user") || members[0];

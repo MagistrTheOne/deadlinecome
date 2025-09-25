@@ -4,14 +4,15 @@ import { getIssuesByProject } from "@/features/issues/actions";
 import { Loading } from "@/components/common/loading";
 
 interface BoardPageProps {
-  params: {
+  params: Promise<{
     workspaceId: string;
     projectId: string;
-  };
+  }>;
 }
 
 export default async function BoardPage({ params }: BoardPageProps) {
-  const issues = await getIssuesByProject(params.projectId);
+  const { projectId } = await params;
+  const issues = await getIssuesByProject(projectId);
 
   return (
     <div className="h-[calc(100vh-8rem)]">

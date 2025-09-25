@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, FolderKanban, Users, Calendar } from "lucide-react";
 import { seedProjects } from "@/data/seed";
 
-export default function ProjectsPage({ params }: { params: { workspaceId: string } }) {
-  const projects = seedProjects.filter(p => p.workspaceId === params.workspaceId);
+export default async function ProjectsPage({ params }: { params: Promise<{ workspaceId: string }> }) {
+  const { workspaceId } = await params;
+  const projects = seedProjects.filter(p => p.workspaceId === workspaceId);
 
   return (
     <div className="space-y-6">
@@ -25,7 +26,7 @@ export default function ProjectsPage({ params }: { params: { workspaceId: string
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
-          <Link key={project.id} href={`/w/${params.workspaceId}/projects/${project.id}/board`}>
+          <Link key={project.id} href={`/w/${workspaceId}/projects/${project.id}/board`}>
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardHeader>
                 <div className="flex items-center justify-between">

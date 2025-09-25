@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Plus, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-export default function DashboardPage({ params }: { params: { workspaceId: string } }) {
+export default async function DashboardPage({ params }: { params: Promise<{ workspaceId: string }> }) {
+  const { workspaceId } = await params;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -14,7 +15,7 @@ export default function DashboardPage({ params }: { params: { workspaceId: strin
           </p>
         </div>
         <Button asChild>
-          <Link href={`/w/${params.workspaceId}/projects`}>
+          <Link href={`/w/${workspaceId}/projects`}>
             <Plus className="mr-2 h-4 w-4" />
             New Project
           </Link>
@@ -131,19 +132,19 @@ export default function DashboardPage({ params }: { params: { workspaceId: strin
           </CardHeader>
           <CardContent className="space-y-2">
             <Button variant="outline" className="w-full justify-start" asChild>
-              <Link href={`/w/${params.workspaceId}/projects/demo/board`}>
+              <Link href={`/w/${workspaceId}/projects/demo/board`}>
                 View Board
                 <ArrowRight className="ml-auto h-4 w-4" />
               </Link>
             </Button>
             <Button variant="outline" className="w-full justify-start" asChild>
-              <Link href={`/w/${params.workspaceId}/projects`}>
+              <Link href={`/w/${workspaceId}/projects`}>
                 Manage Projects
                 <ArrowRight className="ml-auto h-4 w-4" />
               </Link>
             </Button>
             <Button variant="outline" className="w-full justify-start" asChild>
-              <Link href={`/w/${params.workspaceId}/settings/members`}>
+              <Link href={`/w/${workspaceId}/settings/members`}>
                 Invite Members
                 <ArrowRight className="ml-auto h-4 w-4" />
               </Link>

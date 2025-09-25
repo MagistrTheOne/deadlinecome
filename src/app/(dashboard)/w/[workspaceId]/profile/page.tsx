@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -50,13 +51,15 @@ const notificationSchema = z.object({
 type ProfileForm = z.infer<typeof profileSchema>;
 type NotificationForm = z.infer<typeof notificationSchema>;
 
-export default function ProfilePage({ params }: { params: { workspaceId: string } }) {
+export default function ProfilePage() {
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
 
   // Mock current member data
-  const currentMember = seedMembers.find(m => m.userId === currentUser.id && m.workspaceId === params.workspaceId);
-  const userProjects = seedProjects.filter(p => p.workspaceId === params.workspaceId);
+  const currentMember = seedMembers.find(m => m.userId === currentUser.id && m.workspaceId === workspaceId);
+  const userProjects = seedProjects.filter(p => p.workspaceId === workspaceId);
   const userWorkspaces = seedWorkspaces.filter(w => seedMembers.some(m => m.userId === currentUser.id && m.workspaceId === w.id));
 
   const profileForm = useForm<ProfileForm>({

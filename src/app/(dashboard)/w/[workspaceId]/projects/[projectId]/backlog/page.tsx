@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,21 +13,16 @@ import { toast } from "sonner";
 import { Issue } from "@/lib/types";
 import { Plus, ListTodo } from "lucide-react";
 
-interface BacklogPageProps {
-  params: {
-    workspaceId: string;
-    projectId: string;
-  };
-}
-
-export default function BacklogPage({ params }: BacklogPageProps) {
+export default function BacklogPage() {
+  const params = useParams();
+  const projectId = params.projectId as string;
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadIssues = async () => {
       try {
-        const data = await getIssuesByProject(params.projectId);
+        const data = await getIssuesByProject(projectId);
         setIssues(data);
       } catch (error) {
         toast.error("Failed to load issues");
@@ -36,7 +32,7 @@ export default function BacklogPage({ params }: BacklogPageProps) {
     };
 
     loadIssues();
-  }, [params.projectId]);
+  }, [projectId]);
 
   const handleCreateIssue = async (issueData: Omit<Issue, "id" | "key" | "createdAt" | "updatedAt" | "order">) => {
     try {
@@ -75,7 +71,7 @@ export default function BacklogPage({ params }: BacklogPageProps) {
           </p>
         </div>
         <CreateIssueDialog
-          projectId={params.projectId}
+          projectId={projectId}
           onCreate={handleCreateIssue}
           trigger={
             <Button>
