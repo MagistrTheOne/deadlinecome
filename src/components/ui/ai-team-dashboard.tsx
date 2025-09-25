@@ -160,13 +160,27 @@ export default function AITeamDashboard() {
     fetchAITeam();
   }, []);
 
+  // Автоматическое обновление при изменении фильтров
+  useEffect(() => {
+    fetchAITeam();
+  }, [filters.status, filters.specialization]);
+
   const fetchAITeam = async () => {
     try {
-      const response = await fetch("/api/ai-team");
+      const params = new URLSearchParams();
+      if (filters.status && filters.status !== "ALL") {
+        params.append("status", filters.status);
+      }
+      if (filters.specialization && filters.specialization !== "ALL") {
+        params.append("specialization", filters.specialization);
+      }
+      
+      const response = await fetch(`/api/ai-team?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        setAiTeam(data.team || demoAITeam);
+        setAiTeam(data.team || []);
       } else {
+        console.warn("API недоступен, используем fallback данные");
         setAiTeam(demoAITeam);
       }
     } catch (error) {

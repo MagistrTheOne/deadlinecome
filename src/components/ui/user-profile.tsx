@@ -25,6 +25,7 @@ import {
   Settings,
   Edit
 } from "lucide-react";
+import { SlideInAnimation, GlowEffect, HoverGlow } from "./premium-animations";
 
 interface UserProfile {
   id: string;
@@ -292,7 +293,9 @@ export function UserProfile() {
   return (
     <div className="space-y-6">
       {/* Основная информация профиля */}
-      <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+      <SlideInAnimation direction="up" delay={0}>
+        <GlowEffect intensity="medium" color="blue">
+          <Card className="bg-black/50 backdrop-blur-sm border border-white/20 animate-glow-pulse">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-white flex items-center gap-2">
@@ -387,10 +390,14 @@ export function UserProfile() {
             />
           </div>
         </CardContent>
-      </Card>
+          </Card>
+        </GlowEffect>
+      </SlideInAnimation>
 
       {/* Текущие задачи */}
-      <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+      <SlideInAnimation direction="up" delay={200}>
+        <HoverGlow>
+          <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Target className="h-5 w-5" />
@@ -427,7 +434,9 @@ export function UserProfile() {
             ))}
           </div>
         </CardContent>
-      </Card>
+          </Card>
+        </HoverGlow>
+      </SlideInAnimation>
 
       {/* Настроение и состояние */}
       <div className="grid md:grid-cols-2 gap-6">

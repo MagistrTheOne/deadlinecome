@@ -197,13 +197,27 @@ export default function AICodeReviewDashboard() {
     fetchReviews();
   }, []);
 
+  // Автоматическое обновление при изменении фильтров
+  useEffect(() => {
+    fetchReviews();
+  }, [filters.status, filters.score]);
+
   const fetchReviews = async () => {
     try {
-      const response = await fetch("/api/code-review");
+      const params = new URLSearchParams();
+      if (filters.status && filters.status !== "ALL") {
+        params.append("status", filters.status);
+      }
+      if (filters.score && filters.score !== "ALL") {
+        params.append("score", filters.score);
+      }
+      
+      const response = await fetch(`/api/code-review?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        setReviews(data.reviews || demoReviews);
+        setReviews(data.reviews || []);
       } else {
+        console.warn("API недоступен, используем fallback данные");
         setReviews(demoReviews);
       }
     } catch (error) {
