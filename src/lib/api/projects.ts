@@ -57,7 +57,7 @@ export class ProjectService {
         })
       );
 
-      return projectsWithIssueCount;
+      return projectsWithIssueCount as any;
     } catch (error) {
       console.error("Error fetching projects:", error);
       return [];
@@ -97,7 +97,7 @@ export class ProjectService {
       return {
         ...newProject[0],
         issueCount: 0,
-      };
+      } as any;
     } catch (error) {
       console.error("Error creating project:", error);
       throw new Error("Не удалось создать проект");
@@ -135,7 +135,7 @@ export class ProjectService {
       return {
         ...proj[0],
         issueCount: 0, // Пока заглушка
-      };
+      } as any;
     } catch (error) {
       console.error("Error fetching project:", error);
       return null;

@@ -23,6 +23,10 @@ import { DraggableVasilyChat } from "@/components/ui/draggable-vasily-chat";
 import { AIWelcomeSystem } from "@/components/ui/ai-welcome-system";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { PsychologicalSupportPanel } from "@/components/ui/psychological-support-panel";
+import { RoleManagement } from "@/components/ui/role-management";
+import { VasilyProjectManager } from "@/components/ui/vasily-project-manager";
+import { RealTimeTodo } from "@/components/ui/real-time-todo";
+import { WebSocketStats } from "@/components/ui/websocket-stats";
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -165,6 +169,26 @@ export default function DashboardPage() {
       {/* AI Status Section */}
       <div className="mb-8">
         <AIStatus />
+      </div>
+
+      {/* Role Management */}
+      <div className="mb-8">
+        <RoleManagement workspaceId="demo-workspace" />
+      </div>
+
+      {/* Vasily Project Manager */}
+      <div className="mb-8">
+        <VasilyProjectManager projectId="demo-project" workspaceId="demo-workspace" />
+      </div>
+
+      {/* Real-time TODO */}
+      <div className="mb-8">
+        <RealTimeTodo projectId="demo-project" workspaceId="demo-workspace" />
+      </div>
+
+      {/* WebSocket Stats */}
+      <div className="mb-8">
+        <WebSocketStats />
       </div>
 
 

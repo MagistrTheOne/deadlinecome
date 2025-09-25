@@ -51,7 +51,7 @@ export class WorkspaceService {
         })
       );
 
-      return workspacesWithMemberCount;
+      return workspacesWithMemberCount as any;
     } catch (error) {
       console.error("Error fetching workspaces:", error);
       return [];
@@ -87,7 +87,7 @@ export class WorkspaceService {
       return {
         ...newWorkspace[0],
         memberCount: 1,
-      };
+      } as any;
     } catch (error) {
       console.error("Error creating workspace:", error);
       throw new Error("Не удалось создать рабочее пространство");
@@ -128,7 +128,7 @@ export class WorkspaceService {
       return {
         ...ws[0],
         memberCount: memberCount.length,
-      };
+      } as any;
     } catch (error) {
       console.error("Error fetching workspace:", error);
       return null;

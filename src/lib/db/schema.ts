@@ -83,6 +83,10 @@ export const workspaceMember = pgTable("workspace_member", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   role: text("role").notNull().$type<"OWNER" | "ADMIN" | "MEMBER" | "VIEWER">(),
+  // IT-роли для проектов
+  itRole: text("it_role").$type<"DEVELOPER" | "TEAM_LEAD" | "CTO" | "PM" | "QA" | "DEVOPS" | "DESIGNER" | "ANALYST">(),
+  skills: text("skills"), // JSON array of skills
+  experience: integer("experience"), // years of experience
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .$onUpdate(() => new Date())
@@ -163,5 +167,38 @@ export const aiTaskSuggestion = pgTable("ai_task_suggestion", {
   estimatedHours: integer("estimated_hours"),
   reasoning: text("reasoning"), // AI reasoning for the suggestion
   status: text("status").notNull().$type<"PENDING" | "ACCEPTED" | "REJECTED">().default("PENDING"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Project Status Management by Vasily
+export const projectStatus = pgTable("project_status", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
+  status: text("status").notNull().$type<"ON_TRACK" | "AT_RISK" | "BEHIND" | "BLOCKED" | "COMPLETED">(),
+  healthScore: integer("health_score").notNull(), // 0-100
+  progress: integer("progress").notNull(), // 0-100
+  aiAnalysis: text("ai_analysis"), // JSON with Vasily's analysis
+  recommendations: text("recommendations"), // JSON array of recommendations
+  lastAnalyzed: timestamp("last_analyzed").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+// Vasily AI Actions Log
+export const vasilyAction = pgTable("vasily_action", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
+  actionType: text("action_type").notNull().$type<"TASK_ASSIGNED" | "DEADLINE_ALERT" | "STATUS_UPDATE" | "RECOMMENDATION" | "AUTO_CREATE_TASK">(),
+  description: text("description").notNull(),
+  targetUserId: text("target_user_id")
+    .references(() => user.id, { onDelete: "set null" }),
+  metadata: text("metadata"), // JSON with additional data
+  executed: boolean("executed").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

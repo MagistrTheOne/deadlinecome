@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 
 export default function TeamPage() {
   const { data: session, isPending } = useSession();
-  const [members, setMembers] = useState([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");

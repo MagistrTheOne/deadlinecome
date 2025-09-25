@@ -5,30 +5,30 @@ import { Issue } from "@/lib/types";
 import { generateId, generateKey } from "@/lib/utils";
 
 export interface IIssuesRepo {
-  findById(id: string): Promise<Issue | null>;
-  findByProject(projectId: string): Promise<Issue[]>;
-  findByStatus(status: Issue["status"]): Promise<Issue[]>;
-  create(issue: Omit<Issue, "id" | "key" | "createdAt" | "updatedAt" | "order">): Promise<Issue>;
-  update(id: string, updates: Partial<Omit<Issue, "id" | "createdAt" | "updatedAt">>): Promise<Issue | null>;
+  findById(id: string): Promise<any | null>;
+  findByProject(projectId: string): Promise<any[]>;
+  findByStatus(status: any): Promise<any[]>;
+  create(issue: any): Promise<any>;
+  update(id: string, updates: any): Promise<any | null>;
   delete(id: string): Promise<boolean>;
-  reorder(projectId: string, issues: Issue[]): Promise<void>;
+  reorder(projectId: string, issues: any[]): Promise<void>;
 }
 
 export class DrizzleIssuesRepo implements IIssuesRepo {
-  async findById(id: string): Promise<Issue | null> {
+  async findById(id: string): Promise<any | null> {
     const result = await db.select().from(issue).where(eq(issue.id, id)).limit(1);
     return result[0] || null;
   }
 
-  async findByProject(projectId: string): Promise<Issue[]> {
+  async findByProject(projectId: string): Promise<any[]> {
     return await db.select().from(issue).where(eq(issue.projectId, projectId)).orderBy(issue.order);
   }
 
-  async findByStatus(status: Issue["status"]): Promise<Issue[]> {
+  async findByStatus(status: any): Promise<any[]> {
     return await db.select().from(issue).where(eq(issue.status, status));
   }
 
-  async create(issueData: Omit<Issue, "id" | "key" | "createdAt" | "updatedAt" | "order">): Promise<Issue> {
+  async create(issueData: any): Promise<any> {
     const id = generateId();
     const projectIssues = await this.findByProject(issueData.projectId);
     const maxOrder = projectIssues.length > 0 ? Math.max(...projectIssues.map(i => i.order.getTime())) : Date.now();
@@ -44,17 +44,17 @@ export class DrizzleIssuesRepo implements IIssuesRepo {
     return newIssue;
   }
 
-  async update(id: string, updates: Partial<Omit<Issue, "id" | "createdAt" | "updatedAt">>): Promise<Issue | null> {
+  async update(id: string, updates: any): Promise<any | null> {
     await db.update(issue).set(updates).where(eq(issue.id, id));
     return await this.findById(id);
   }
 
   async delete(id: string): Promise<boolean> {
     const result = await db.delete(issue).where(eq(issue.id, id));
-    return result.rowCount > 0;
+    return result.length > 0;
   }
 
-  async reorder(projectId: string, reorderedIssues: Issue[]): Promise<void> {
+  async reorder(projectId: string, reorderedIssues: any[]): Promise<void> {
     // Update order for all issues in the project
     for (const issueData of reorderedIssues) {
       await db.update(issue)

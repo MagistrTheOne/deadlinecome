@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Rocket, Star, Planet, Zap } from "lucide-react";
+import { Rocket, Star, Zap } from "lucide-react";
 
 interface LoadingScreenProps {
   message?: string;
@@ -84,7 +84,7 @@ export function LoadingScreen({
                   <Star className="h-4 w-4 text-yellow-400 animate-pulse" />
                 </div>
                 <div className="absolute -bottom-1 -left-2">
-                  <Planet className="h-3 w-3 text-blue-400 animate-pulse" style={{ animationDelay: '0.5s' }} />
+                  <Star className="h-3 w-3 text-blue-400 animate-pulse" style={{ animationDelay: '0.5s' }} />
                 </div>
                 <div className="absolute top-1/2 -left-4">
                   <Zap className="h-3 w-3 text-purple-400 animate-pulse" style={{ animationDelay: '1s' }} />

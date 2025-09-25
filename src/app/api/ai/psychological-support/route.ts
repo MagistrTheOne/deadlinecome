@@ -84,19 +84,19 @@ export async function POST(request: NextRequest) {
           message: resolved ? "Кризисная ситуация разрешена" : "Кризисная ситуация не найдена"
         });
 
-      case "add-message":
-        const { userId: messageUserId, userName, content, channel } = data;
+            case "add-message":
+                const { userId: messageUserId, userName: messageUserName, content, channel } = data;
         const teamMessage = TeamMoodMonitor.addMessage({
           userId: messageUserId,
-          userName,
+          userName: messageUserName,
           content,
           channel,
           type: "text"
         });
         return NextResponse.json({
           success: true,
-          message: teamMessage,
-          message: "Сообщение добавлено для анализа настроения"
+          message: "Сообщение добавлено для анализа настроения",
+          data: teamMessage
         });
 
       case "get-team-mood":

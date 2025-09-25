@@ -32,7 +32,7 @@ export function VasilyVoice() {
     confidence: 0
   });
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function VasilyVoice() {
           setVoiceState(prev => ({ ...prev, isListening: true }));
         };
 
-        recognitionRef.current.onresult = (event) => {
+        recognitionRef.current.onresult = (event: any) => {
           let finalTranscript = '';
           let interimTranscript = '';
           let confidence = 0;
@@ -81,7 +81,7 @@ export function VasilyVoice() {
           setVoiceState(prev => ({ ...prev, isListening: false }));
         };
 
-        recognitionRef.current.onerror = (event) => {
+        recognitionRef.current.onerror = (event: any) => {
           console.error('Speech recognition error:', event.error);
           setVoiceState(prev => ({ ...prev, isListening: false }));
         };
@@ -318,7 +318,7 @@ export function VasilyVoice() {
 // Расширяем Window интерфейс для TypeScript
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
   }
 }

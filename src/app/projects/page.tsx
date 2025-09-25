@@ -16,8 +16,8 @@ import { useRouter } from "next/navigation";
 
 export default function ProjectsPage() {
   const { data: session, isPending } = useSession();
-  const [projects, setProjects] = useState([]);
-  const [workspaces, setWorkspaces] = useState([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newProject, setNewProject] = useState({ 
@@ -67,7 +67,7 @@ export default function ProjectsPage() {
       }
 
       const project = await response.json();
-      setProjects([...projects, project]);
+      setProjects(prev => [...prev, project]);
       setNewProject({ name: "", key: "", description: "", workspaceId: "" });
       setIsCreateDialogOpen(false);
     } catch (error) {

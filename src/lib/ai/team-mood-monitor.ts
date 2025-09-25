@@ -120,7 +120,7 @@ export class TeamMoodMonitor {
     }
 
     // Анализируем эмодзи
-    const emojiPattern = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu;
+    const emojiPattern = /[\uD83C-\uDBFF\uDC00-\uDFFF]+|[\uD83D\uDC00-\uDE4F]+|[\uD83D\uDE80-\uDEFF]+|[\u2600-\u26FF]+|[\u2700-\u27BF]+/g;
     const emojis = content.match(emojiPattern) || [];
     
     if (emojis.length > 0) {
@@ -427,8 +427,8 @@ export class TeamMoodMonitor {
     });
 
     const mostActiveUsers = Array.from(userActivity.entries())
-      .map(([userId, data]) => ({ userId, ...data }))
-      .sort((a, b) => b.count - a.count)
+      .map(([userId, data]) => ({ userId, userName: data.userName, messageCount: data.count }))
+      .sort((a, b) => b.messageCount - a.messageCount)
       .slice(0, 5);
 
     return {

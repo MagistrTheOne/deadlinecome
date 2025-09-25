@@ -33,7 +33,7 @@ export class DrizzleWorkspacesRepo implements IWorkspacesRepo {
     return await db.select().from(workspace);
   }
 
-  async create(workspaceData: Omit<Workspace, "id" | "createdAt" | "updatedAt">): Promise<Workspace> {
+  async create(workspaceData: any): Promise<any> {
     const id = generateId();
     const newWorkspace = {
       id,
@@ -44,14 +44,14 @@ export class DrizzleWorkspacesRepo implements IWorkspacesRepo {
     return newWorkspace;
   }
 
-  async update(id: string, updates: Partial<Omit<Workspace, "id" | "createdAt" | "updatedAt">>): Promise<Workspace | null> {
+  async update(id: string, updates: any): Promise<any | null> {
     await db.update(workspace).set(updates).where(eq(workspace.id, id));
     return await this.findById(id);
   }
 
   async delete(id: string): Promise<boolean> {
     const result = await db.delete(workspace).where(eq(workspace.id, id));
-    return result.rowCount > 0;
+    return result.length > 0;
   }
 }
 

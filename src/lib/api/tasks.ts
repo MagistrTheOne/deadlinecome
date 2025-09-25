@@ -65,7 +65,7 @@ export class TaskService {
         .where(eq(issue.projectId, projectId))
         .orderBy(issue.order);
 
-      return tasks;
+      return tasks as any;
     } catch (error) {
       console.error("Error fetching tasks:", error);
       return [];
@@ -131,7 +131,7 @@ export class TaskService {
         })
         .returning();
 
-      return newTask[0];
+      return newTask[0] as any;
     } catch (error) {
       console.error("Error creating task:", error);
       throw new Error("Не удалось создать задачу");
@@ -181,7 +181,7 @@ export class TaskService {
         .where(eq(issue.id, taskId))
         .returning();
 
-      return updatedTask[0];
+      return updatedTask[0] as any;
     } catch (error) {
       console.error("Error updating task status:", error);
       return null;
@@ -222,7 +222,7 @@ export class TaskService {
         return null;
       }
 
-      return task[0];
+      return task[0] as any;
     } catch (error) {
       console.error("Error fetching task:", error);
       return null;

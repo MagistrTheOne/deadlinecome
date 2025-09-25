@@ -55,13 +55,13 @@ export const auth = betterAuth({
       id: "session-refresh",
       onRequest: async (ctx) => {
         // Автоматически продлеваем сессию при активности
-        if (ctx.session && ctx.request?.url?.includes('/api/')) {
-          const lastActivity = (ctx.session as any).lastActivity || 0;
+        if ((ctx as any).session && (ctx as any).request?.url?.includes('/api/')) {
+          const lastActivity = ((ctx as any).session as any).lastActivity || 0;
           const now = Date.now();
           
           // Если прошло больше 1 часа с последней активности, обновляем сессию
           if (now - lastActivity > 60 * 60 * 1000) {
-            await (ctx.session as any).update({
+            await ((ctx as any).session as any).update({
               lastActivity: now,
             });
           }

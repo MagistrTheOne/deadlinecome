@@ -396,7 +396,7 @@ export class CrisisMode {
           message = {
             id: crypto.randomUUID(),
             userId,
-            type: "support",
+            type: "motivation",
             content: "🚨 КРИЗИСНАЯ СИТУАЦИЯ: Обнаружена проблема, требующая внимания. Я здесь, чтобы помочь и поддержать команду. Мы справимся! 💪",
             tone: "supportive",
             priority: "medium",

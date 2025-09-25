@@ -136,7 +136,7 @@ export class PsychologicalSupport {
       },
       {
         content: "Стресс - это нормально в нашей работе. Помните: вы справлялись с трудностями раньше, справитесь и сейчас! 💪",
-        tone: "encouraging" as const,
+        tone: "energetic" as const,
         type: "encouragement" as const
       },
       {
@@ -283,7 +283,7 @@ export class PsychologicalSupport {
     }
 
     // Проверяем на технические блокеры
-    if (context.recentActivity.some(activity => 
+    if (context.recentActivity.some((activity: any) =>
       activity.includes("stuck") || activity.includes("blocked") || activity.includes("error")
     )) {
       return {

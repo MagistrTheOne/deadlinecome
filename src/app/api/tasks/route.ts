@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { TaskService } from "@/lib/api/tasks";
+import { getWebSocketManager } from "@/lib/websocket-server";
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,6 +41,12 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     const task = await TaskService.createTask(data, session.user.id);
     
+    // Отправляем real-time уведомление
+    const wsManager = getWebSocketManager();
+    if (wsManager && data.projectId) {
+      wsManager.notifyTaskCreated(data.projectId, task);
+    }
+    
     return NextResponse.json(task, { status: 201 });
   } catch (error) {
     console.error("Error creating task:", error);
@@ -62,6 +69,12 @@ export async function PATCH(request: NextRequest) {
     
     if (!task) {
       return NextResponse.json({ error: "Task not found or access denied" }, { status: 404 });
+    }
+
+    // Отправляем real-time уведомление
+    const wsManager = getWebSocketManager();
+    if (wsManager && task.projectId) {
+      wsManager.notifyTaskUpdate(task.projectId, task);
     }
 
     return NextResponse.json(task);
