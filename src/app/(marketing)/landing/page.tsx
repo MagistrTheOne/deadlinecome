@@ -197,11 +197,11 @@ export default function LandingPage() {
               <Button 
                 size="lg" 
                 variant="default"
-                className="px-8 py-4 text-lg font-semibold"
+                className="px-8 py-4 text-lg font-semibold bg-white text-black hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl"
                 asChild
               >
                 <Link href="/sign-up">
-                  УЛЬТАЙ РЫНОК С AI-КОМАНДОЙ!
+                  Войти в будущее
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -209,11 +209,11 @@ export default function LandingPage() {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="px-8 py-4 text-lg"
+                className="px-8 py-4 text-lg border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300"
                 asChild
               >
                 <Link href="/contact">
-                  Связаться с MagistrTheOne
+                  Связаться с нами
                 </Link>
               </Button>
             </div>
@@ -317,8 +317,12 @@ export default function LandingPage() {
 
                 <CardContent>
                   <Button 
-                    variant={plan.popular ? "default" : "glass"}
-                    className="w-full mb-6"
+                    variant={plan.popular ? "default" : "outline"}
+                    className={`w-full mb-6 ${
+                      plan.popular 
+                        ? 'bg-white text-black hover:bg-white/90 shadow-lg hover:shadow-xl' 
+                        : 'border-white/20 text-white hover:bg-white/10 hover:border-white/40'
+                    } transition-all duration-300`}
                     size="lg"
                     asChild
                   >
@@ -363,7 +367,7 @@ export default function LandingPage() {
             </p>
             <Button 
               variant="outline" 
-              className="border-white/20 text-white hover:bg-white/10"
+              className="border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300"
               asChild
             >
               <Link href="/contact">
@@ -408,17 +412,32 @@ export default function LandingPage() {
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10" asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300" 
+                        asChild
+                      >
                         <a href="mailto:maxonyushko71@gmail.com" target="_blank" rel="noopener noreferrer">
                           maxonyushko71@gmail.com
                         </a>
                       </Button>
-                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10" asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300" 
+                        asChild
+                      >
                         <a href="https://t.me/MagistrTheOne" target="_blank" rel="noopener noreferrer">
                           Telegram: @MagistrTheOne
                         </a>
                       </Button>
-                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10" asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300" 
+                        asChild
+                      >
                         <a href="https://github.com/MagistrTheOne" target="_blank" rel="noopener noreferrer">
                           GitHub: MagistrTheOne
                         </a>
@@ -451,23 +470,23 @@ export default function LandingPage() {
             <Button 
               size="lg" 
               variant="default"
-              className="px-8 py-4 text-lg font-semibold"
+              className="px-8 py-4 text-lg font-semibold bg-white text-black hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl"
               asChild
             >
-              <Link href="/sign-up">
-                УЛЬТАЙ РЫНОК С AI-КОМАНДОЙ!
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+                <Link href="/sign-up">
+                  Войти в будущее
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
             </Button>
             
             <Button 
               variant="outline" 
               size="lg"
-              className="px-8 py-4 text-lg"
+              className="px-8 py-4 text-lg border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300"
               asChild
             >
               <Link href="/contact">
-                Связаться с MagistrTheOne
+                Связаться с нами
               </Link>
             </Button>
           </div>
@@ -490,17 +509,32 @@ export default function LandingPage() {
                 12 AI-специалистов работают 24/7 для автоматизации ваших процессов.
               </p>
               <div className="flex space-x-4">
-                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white" asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300" 
+                  asChild
+                >
                   <a href="https://t.me/MagistrTheOne" target="_blank" rel="noopener noreferrer">
                     Telegram
                   </a>
                 </Button>
-                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white" asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300" 
+                  asChild
+                >
                   <a href="https://github.com/MagistrTheOne" target="_blank" rel="noopener noreferrer">
                     GitHub
                   </a>
                 </Button>
-                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white" asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300" 
+                  asChild
+                >
                   <a href="https://www.linkedin.com/in/magistrtheoneboss/" target="_blank" rel="noopener noreferrer">
                     LinkedIn
                   </a>

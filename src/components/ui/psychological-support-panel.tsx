@@ -43,18 +43,33 @@ export function PsychologicalSupportPanel() {
       setLoading(true);
       
       // Получаем сообщения поддержки
-      const supportResponse = await fetch('/api/ai/psychological-support');
-      if (supportResponse.ok) {
-        const supportData = await supportResponse.json();
-        setSupportMessages(supportData.messages || []);
-        setActiveCrises(supportData.activeCrises || []);
+      try {
+        const supportResponse = await fetch('/api/ai/psychological-support');
+        if (supportResponse.ok) {
+          const supportData = await supportResponse.json();
+          setSupportMessages(supportData.messages || []);
+          setActiveCrises(supportData.activeCrises || []);
+        } else {
+          throw new Error('Failed to fetch support data');
+        }
+      } catch (error) {
+        console.error('Error fetching support data:', error);
+        setSupportMessages([]);
+        setActiveCrises([]);
       }
 
       // Получаем настроение команды
-      const moodResponse = await fetch('/api/ai/team-mood');
-      if (moodResponse.ok) {
-        const moodData = await moodResponse.json();
-        setTeamMood(moodData);
+      try {
+        const moodResponse = await fetch('/api/ai/team-mood');
+        if (moodResponse.ok) {
+          const moodData = await moodResponse.json();
+          setTeamMood(moodData);
+        } else {
+          throw new Error('Failed to fetch mood data');
+        }
+      } catch (error) {
+        console.error('Error fetching mood data:', error);
+        setTeamMood({ overall: 'neutral', stress: 'low', energy: 'medium' });
       }
     } catch (error) {
       console.error('Ошибка получения данных поддержки:', error);

@@ -18,6 +18,8 @@ const getRealChartData = async (): Promise<ChartData[]> => {
     if (response.ok) {
       const data = await response.json();
       return data.chartData || [];
+    } else {
+      throw new Error('Failed to fetch chart data');
     }
   } catch (error) {
     console.error('Ошибка загрузки статистики:', error);

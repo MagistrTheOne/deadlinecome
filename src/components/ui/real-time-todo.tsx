@@ -86,23 +86,27 @@ export function RealTimeTodo({ projectId, workspaceId }: RealTimeTodoProps) {
     };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      
-      if (data.type === "todo_updated") {
-        setTodos(prev => {
-          const existingIndex = prev.findIndex(todo => todo.id === data.todo.id);
-          if (existingIndex >= 0) {
-            const updated = [...prev];
-            updated[existingIndex] = data.todo;
-            return updated;
-          } else {
-            return [...prev, data.todo];
-          }
-        });
-      } else if (data.type === "todo_created") {
-        setTodos(prev => [...prev, data.todo]);
-      } else if (data.type === "todo_deleted") {
-        setTodos(prev => prev.filter(todo => todo.id !== data.todoId));
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === "todo_updated") {
+          setTodos(prev => {
+            const existingIndex = prev.findIndex(todo => todo.id === data.todo.id);
+            if (existingIndex >= 0) {
+              const updated = [...prev];
+              updated[existingIndex] = data.todo;
+              return updated;
+            } else {
+              return [...prev, data.todo];
+            }
+          });
+        } else if (data.type === "todo_created") {
+          setTodos(prev => [...prev, data.todo]);
+        } else if (data.type === "todo_deleted") {
+          setTodos(prev => prev.filter(todo => todo.id !== data.todoId));
+        }
+      } catch (error) {
+        console.error("Error parsing WebSocket message:", error);
       }
     };
 
@@ -226,6 +230,8 @@ export function RealTimeTodo({ projectId, workspaceId }: RealTimeTodoProps) {
       if (response.ok) {
         const data = await response.json();
         setTeamMembers(data.members);
+      } else {
+        throw new Error('Failed to fetch team members');
       }
     } catch (error) {
       console.error("Error loading team members:", error);

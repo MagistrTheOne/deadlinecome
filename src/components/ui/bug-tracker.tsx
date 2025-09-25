@@ -309,7 +309,7 @@ export default function BugTracker() {
             <SelectValue placeholder="Статус" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Все статусы</SelectItem>
+            <SelectItem value="ALL">Все статусы</SelectItem>
             <SelectItem value="NEW">Новый</SelectItem>
             <SelectItem value="ASSIGNED">Назначен</SelectItem>
             <SelectItem value="IN_PROGRESS">В работе</SelectItem>
