@@ -1,48 +1,147 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { NotificationService } from "@/lib/api/notifications";
+import { NotificationManager } from "@/lib/notifications";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get("action");
 
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    switch (action) {
+      case "all":
+        const allNotifications = NotificationManager.getNotifications();
+        return NextResponse.json(allNotifications);
+
+      case "unread":
+        const unreadNotifications = NotificationManager.getUnreadNotifications();
+        return NextResponse.json(unreadNotifications);
+
+      case "stats":
+        const stats = NotificationManager.getNotificationStats();
+        return NextResponse.json(stats);
+
+      default:
+        return NextResponse.json({
+          notifications: NotificationManager.getNotifications(),
+          unread: NotificationManager.getUnreadNotifications(),
+          stats: NotificationManager.getNotificationStats()
+        });
     }
-
-    const notifications = await NotificationService.getNotifications(session.user.id);
-    return NextResponse.json(notifications);
   } catch (error) {
-    console.error("Error fetching notifications:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Ошибка получения уведомлений:", error);
+    return NextResponse.json(
+      { error: "Ошибка получения уведомлений" },
+      { status: 500 }
+    );
   }
 }
 
-export async function PATCH(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const body = await request.json();
+    const { action, data } = body;
 
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    switch (action) {
+      case "create":
+        const { type, title, message, persistent, source, userId, actions } = data;
+        const notification = NotificationManager.addNotification({
+          type,
+          title,
+          message,
+          persistent: persistent || false,
+          source: source || "system",
+          userId,
+          actions
+        });
+        return NextResponse.json({
+          success: true,
+          notification,
+          message: "Уведомление создано"
+        });
+
+      case "mark-read":
+        const { notificationId } = data;
+        const marked = NotificationManager.markAsRead(notificationId);
+        return NextResponse.json({
+          success: marked,
+          message: marked ? "Уведомление отмечено как прочитанное" : "Уведомление не найдено"
+        });
+
+      case "mark-all-read":
+        NotificationManager.markAllAsRead();
+        return NextResponse.json({
+          success: true,
+          message: "Все уведомления отмечены как прочитанные"
+        });
+
+      case "remove":
+        const { notificationId: removeId } = data;
+        const removed = NotificationManager.removeNotification(removeId);
+        return NextResponse.json({
+          success: removed,
+          message: removed ? "Уведомление удалено" : "Уведомление не найдено"
+        });
+
+      case "cleanup":
+        const { daysOld } = data;
+        NotificationManager.cleanupOldNotifications(daysOld || 7);
+        return NextResponse.json({
+          success: true,
+          message: "Старые уведомления очищены"
+        });
+
+      case "system-notification":
+        const { type: sysType, title: sysTitle, message: sysMessage, persistent: sysPersistent } = data;
+        const sysNotification = NotificationManager.createSystemNotification(
+          sysType,
+          sysTitle,
+          sysMessage,
+          sysPersistent
+        );
+        return NextResponse.json({
+          success: true,
+          notification: sysNotification,
+          message: "Системное уведомление создано"
+        });
+
+      case "ai-notification":
+        const { type: aiType, title: aiTitle, message: aiMessage, actions: aiActions } = data;
+        const aiNotification = NotificationManager.createAINotification(
+          aiType,
+          aiTitle,
+          aiMessage,
+          aiActions
+        );
+        return NextResponse.json({
+          success: true,
+          notification: aiNotification,
+          message: "AI уведомление создано"
+        });
+
+      case "team-notification":
+        const { type: teamType, title: teamTitle, message: teamMessage, userId: teamUserId } = data;
+        const teamNotification = NotificationManager.createTeamNotification(
+          teamType,
+          teamTitle,
+          teamMessage,
+          teamUserId
+        );
+        return NextResponse.json({
+          success: true,
+          notification: teamNotification,
+          message: "Командное уведомление создано"
+        });
+
+      default:
+        return NextResponse.json(
+          { error: "Неизвестное действие" },
+          { status: 400 }
+        );
     }
-
-    const { notificationId, action } = await request.json();
-
-    if (action === "markAsRead") {
-      await NotificationService.markAsRead(notificationId, session.user.id);
-    } else if (action === "delete") {
-      await NotificationService.deleteNotification(notificationId, session.user.id);
-    } else if (action === "markAllAsRead") {
-      await NotificationService.markAllAsRead(session.user.id);
-    }
-
-    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error updating notifications:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Ошибка обработки уведомлений:", error);
+    return NextResponse.json(
+      { error: "Ошибка обработки уведомлений" },
+      { status: 500 }
+    );
   }
 }

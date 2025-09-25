@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserMenu } from "@/components/auth/user-menu";
 import { KeyboardShortcuts } from "@/components/ui/keyboard-shortcuts";
+import { NotificationSystem } from "@/components/ui/notification-system";
 import { Search, Bell, Menu, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -53,19 +54,7 @@ export function Header({ onMenuClick, showSidebarToggle = false }: HeaderProps) 
         {/* Правая часть */}
         <div className="flex items-center space-x-3">
           {/* Уведомления */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push("/notifications")}
-            className="relative text-white/80 hover:text-white hover:bg-white/10 border border-white/10 transition-all duration-200"
-          >
-            <Bell className="h-5 w-5" />
-            <Badge 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white border border-red-400"
-            >
-              3
-            </Badge>
-          </Button>
+          <NotificationSystem />
 
           {/* Клавишные сокращения */}
           <KeyboardShortcuts />

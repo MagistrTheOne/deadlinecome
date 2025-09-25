@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { VasilyStatusSystem } from "@/lib/ai/vasily-status-system";
 import { ActivityMonitor } from "@/lib/ai/activity-monitor";
+import { RealtimeManager } from "@/lib/realtime";
 
 interface AIStatus {
   primary: string;
@@ -65,9 +66,20 @@ export function AIStatus() {
     fetchStatus();
     updateVasilyStatus();
 
+    // Подписываемся на реалтайм обновления
+    const subscriptionId = RealtimeManager.subscribe("status_change", (event) => {
+      if (event.data.type === "vasily_status") {
+        updateVasilyStatus();
+      }
+    });
+
     // Обновляем статус Василия каждые 30 секунд
     const interval = setInterval(updateVasilyStatus, 30000);
-    return () => clearInterval(interval);
+    
+    return () => {
+      clearInterval(interval);
+      RealtimeManager.unsubscribe(subscriptionId);
+    };
   }, []);
 
   if (loading) {

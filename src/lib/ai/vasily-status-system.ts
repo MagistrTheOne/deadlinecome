@@ -1,5 +1,8 @@
 "use client";
 
+import { NotificationManager } from "@/lib/notifications";
+import { RealtimeManager } from "@/lib/realtime";
+
 export interface VasilyStatus {
   id: string;
   name: string;
@@ -216,6 +219,7 @@ export class VasilyStatusSystem {
     
     // Если статус устарел или не установлен, генерируем новый
     if (!this.currentStatus || (now - this.lastUpdate) > (this.currentStatus.duration * 60 * 1000)) {
+      const oldStatus = this.currentStatus;
       this.currentStatus = this.generateRandomStatus();
       this.lastUpdate = now;
       this.statusHistory.push(this.currentStatus);
@@ -224,6 +228,18 @@ export class VasilyStatusSystem {
       if (this.statusHistory.length > 50) {
         this.statusHistory = this.statusHistory.slice(-50);
       }
+
+      // Отправляем уведомление о смене статуса (только для важных изменений)
+      if (oldStatus && this.shouldNotifyStatusChange(oldStatus, this.currentStatus)) {
+        this.sendStatusChangeNotification(oldStatus, this.currentStatus);
+      }
+
+      // Отправляем реалтайм событие о смене статуса
+      RealtimeManager.emit("status_change", {
+        type: "vasily_status",
+        oldStatus,
+        newStatus: this.currentStatus
+      });
     }
 
     return this.currentStatus;
@@ -257,8 +273,9 @@ export class VasilyStatusSystem {
     }
     // Ночью (22-6) - сонные статусы
     else {
+      // Ночью (22-6) - только "tired" (сонных нет в типе mood)
       weights = this.statuses.map(status => 
-        status.mood === "tired" || status.mood === "sleep" ? 3 : 0.5
+        status.mood === "tired" ? 3 : 0.5
       );
     }
 
@@ -313,5 +330,54 @@ export class VasilyStatusSystem {
   static getMostCommonMood(): string {
     const stats = this.getMoodStats();
     return Object.entries(stats).reduce((a, b) => stats[a[0]] > stats[b[0]] ? a : b)[0];
+  }
+
+  /**
+   * Проверяет, нужно ли уведомлять о смене статуса
+   */
+  private static shouldNotifyStatusChange(oldStatus: VasilyStatus, newStatus: VasilyStatus): boolean {
+    // Уведомляем только о значительных изменениях настроения
+    const significantMoods = ["angry", "worried", "excited"];
+    return significantMoods.includes(newStatus.mood) && oldStatus.mood !== newStatus.mood;
+  }
+
+  /**
+   * Отправляет уведомление о смене статуса
+   */
+  private static sendStatusChangeNotification(oldStatus: VasilyStatus, newStatus: VasilyStatus): void {
+    let notificationType: "info" | "warning" | "error" = "info";
+    let title = "Василий сменил статус";
+    let message = `Василий теперь: ${newStatus.name}`;
+
+    switch (newStatus.mood) {
+      case "angry":
+        notificationType = "warning";
+        title = "Василий расстроен";
+        message = `Василий расстроен: ${newStatus.description}. Возможно, нужна помощь команде.`;
+        break;
+      case "worried":
+        notificationType = "warning";
+        title = "Василий беспокоится";
+        message = `Василий беспокоится: ${newStatus.description}. Проверьте состояние проекта.`;
+        break;
+      case "excited":
+        notificationType = "info";
+        title = "Василий в восторге!";
+        message = `Василий в отличном настроении: ${newStatus.description}. Отличное время для сложных задач!`;
+        break;
+    }
+
+    NotificationManager.createAINotification(
+      notificationType,
+      title,
+      message,
+      [
+        {
+          label: "Посмотреть статус",
+          action: "view_status",
+          variant: "default"
+        }
+      ]
+    );
   }
 }
