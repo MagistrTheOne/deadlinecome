@@ -259,9 +259,9 @@ export default function BugTracker() {
   };
 
   const filteredBugs = bugs.filter(bug => {
-    if (filters.status && bug.status !== filters.status) return false;
-    if (filters.priority && bug.priority !== filters.priority) return false;
-    if (filters.category && bug.category !== filters.category) return false;
+    if (filters.status && filters.status !== "ALL" && bug.status !== filters.status) return false;
+    if (filters.priority && filters.priority !== "ALL" && bug.priority !== filters.priority) return false;
+    if (filters.category && filters.category !== "ALL" && bug.category !== filters.category) return false;
     return true;
   });
 
@@ -323,7 +323,7 @@ export default function BugTracker() {
             <SelectValue placeholder="Приоритет" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Все приоритеты</SelectItem>
+            <SelectItem value="ALL">Все приоритеты</SelectItem>
             <SelectItem value="CRITICAL">Критический</SelectItem>
             <SelectItem value="HIGH">Высокий</SelectItem>
             <SelectItem value="MEDIUM">Средний</SelectItem>
@@ -335,7 +335,7 @@ export default function BugTracker() {
             <SelectValue placeholder="Категория" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Все категории</SelectItem>
+            <SelectItem value="ALL">Все категории</SelectItem>
             <SelectItem value="FRONTEND">Frontend</SelectItem>
             <SelectItem value="BACKEND">Backend</SelectItem>
             <SelectItem value="DATABASE">База данных</SelectItem>

@@ -30,6 +30,7 @@ import { WebSocketStats } from "@/components/ui/websocket-stats";
 import AITeamDashboard from "@/components/ui/ai-team-dashboard";
 import BugTracker from "@/components/ui/bug-tracker";
 import AICodeReviewDashboard from "@/components/ui/ai-code-review-dashboard";
+import { UserProfile } from "@/components/ui/user-profile";
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -167,6 +168,11 @@ export default function DashboardPage() {
             </Button>
           </CardContent>
         </Card>
+      </div>
+
+      {/* User Profile Section */}
+      <div className="mb-8">
+        <UserProfile />
       </div>
 
       {/* AI Status Section */}

@@ -70,62 +70,80 @@ export function RealTimeTodo({ projectId, workspaceId }: RealTimeTodoProps) {
   const connectWebSocket = () => {
     setRealTimeStatus("connecting");
     
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000'}/ws`);
-    wsRef.current = ws;
+    try {
+      // Проверяем доступность WebSocket
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000';
+      const ws = new WebSocket(`${wsUrl}/ws`);
+      wsRef.current = ws;
 
-    ws.onopen = () => {
-      setRealTimeStatus("connected");
-      console.log("WebSocket connected");
-      
-      // Подписываемся на обновления проекта
-      ws.send(JSON.stringify({
-        type: "subscribe",
-        projectId,
-        workspaceId,
-      }));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
+      ws.onopen = () => {
+        setRealTimeStatus("connected");
+        console.log("WebSocket connected");
         
-        if (data.type === "todo_updated") {
-          setTodos(prev => {
-            const existingIndex = prev.findIndex(todo => todo.id === data.todo.id);
-            if (existingIndex >= 0) {
-              const updated = [...prev];
-              updated[existingIndex] = data.todo;
-              return updated;
-            } else {
-              return [...prev, data.todo];
+        // Подписываемся на обновления проекта
+        try {
+          ws.send(JSON.stringify({
+            type: "subscribe",
+            projectId,
+            workspaceId,
+          }));
+        } catch (error) {
+          console.error("Error sending subscription message:", error);
+        }
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === "todo_updated") {
+            setTodos(prev => {
+              const existingIndex = prev.findIndex(todo => todo.id === data.todo.id);
+              if (existingIndex >= 0) {
+                const updated = [...prev];
+                updated[existingIndex] = data.todo;
+                return updated;
+              } else {
+                return [...prev, data.todo];
+              }
+            });
+          } else if (data.type === "todo_created") {
+            setTodos(prev => [...prev, data.todo]);
+          } else if (data.type === "todo_deleted") {
+            setTodos(prev => prev.filter(todo => todo.id !== data.todoId));
+          }
+        } catch (error) {
+          console.error("Error parsing WebSocket message:", error);
+        }
+      };
+
+      ws.onclose = (event) => {
+        setRealTimeStatus("disconnected");
+        console.log("WebSocket disconnected:", event.code, event.reason);
+        
+        // Переподключаемся только если это не было намеренное закрытие
+        if (event.code !== 1000) {
+          setTimeout(() => {
+            if (wsRef.current?.readyState === WebSocket.CLOSED) {
+              connectWebSocket();
             }
-          });
-        } else if (data.type === "todo_created") {
-          setTodos(prev => [...prev, data.todo]);
-        } else if (data.type === "todo_deleted") {
-          setTodos(prev => prev.filter(todo => todo.id !== data.todoId));
+          }, 3000);
         }
-      } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
-      }
-    };
+      };
 
-    ws.onclose = () => {
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        setRealTimeStatus("disconnected");
+      };
+    } catch (error) {
+      console.error("Error creating WebSocket connection:", error);
       setRealTimeStatus("disconnected");
-      console.log("WebSocket disconnected");
       
-      // Переподключаемся через 3 секунды
+      // Fallback: пытаемся переподключиться через 5 секунд
       setTimeout(() => {
-        if (wsRef.current?.readyState === WebSocket.CLOSED) {
-          connectWebSocket();
-        }
-      }, 3000);
-    };
-
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      setRealTimeStatus("disconnected");
-    };
+        connectWebSocket();
+      }, 5000);
+    }
   };
 
   const loadTodos = async () => {

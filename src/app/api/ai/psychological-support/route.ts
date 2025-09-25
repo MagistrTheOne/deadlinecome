@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PsychologicalSupport } from "@/lib/ai/psychological-support";
-import { TeamMoodMonitor } from "@/lib/ai/team-mood-monitor";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,37 +7,26 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get("action");
 
     switch (action) {
-      case "stats":
-        const stats = PsychologicalSupport.getSupportStats();
-        return NextResponse.json(stats);
-
-      case "profiles":
-        const profiles = PsychologicalSupport.getAllUserProfiles();
-        return NextResponse.json(profiles);
+      case "messages":
+        const messages = PsychologicalSupport.getSupportMessages();
+        return NextResponse.json({ messages });
 
       case "crises":
         const crises = PsychologicalSupport.getActiveCrises();
-        return NextResponse.json(crises);
+        return NextResponse.json({ activeCrises: crises });
 
       case "recommendations":
-        const recommendations = PsychologicalSupport.getTeamAtmosphereRecommendations();
+        const recommendations = PsychologicalSupport.getRecommendations();
         return NextResponse.json({ recommendations });
 
-      case "daily-motivation":
-        const dailyMotivation = PsychologicalSupport.generateDailyMotivation();
-        return NextResponse.json({ messages: dailyMotivation });
-
       default:
-        return NextResponse.json({
-          stats: PsychologicalSupport.getSupportStats(),
-          activeCrises: PsychologicalSupport.getActiveCrises(),
-          recommendations: PsychologicalSupport.getTeamAtmosphereRecommendations()
-        });
+        const supportData = PsychologicalSupport.getSupportData();
+        return NextResponse.json(supportData);
     }
   } catch (error) {
     console.error("Ошибка получения данных психологической поддержки:", error);
     return NextResponse.json(
-      { error: "Ошибка получения данных психологической поддержки" },
+      { error: "Ошибка получения данных поддержки" },
       { status: 500 }
     );
   }
@@ -50,75 +38,34 @@ export async function POST(request: NextRequest) {
     const { action, data } = body;
 
     switch (action) {
-      case "analyze-and-support":
-        const { userId, context } = data;
-        const supportMessages = PsychologicalSupport.analyzeAndSupport(userId, context);
-        return NextResponse.json({
-          success: true,
-          messages: supportMessages,
-          message: `Сгенерировано ${supportMessages.length} сообщений поддержки`
-        });
-
-      case "update-profile":
-        const { userId: profileUserId, updates } = data;
-        PsychologicalSupport.updateUserProfile(profileUserId, updates);
-        return NextResponse.json({
-          success: true,
-          message: "Профиль пользователя обновлен"
-        });
-
-      case "initialize-profile":
-        const { userId: initUserId, userName } = data;
-        const profile = PsychologicalSupport.initializeUserProfile(initUserId, userName);
-        return NextResponse.json({
-          success: true,
-          profile,
-          message: "Профиль пользователя инициализирован"
-        });
-
-      case "resolve-crisis":
-        const { crisisId, resolutionActions } = data;
-        const resolved = PsychologicalSupport.resolveCrisis(crisisId, resolutionActions);
-        return NextResponse.json({
-          success: resolved,
-          message: resolved ? "Кризисная ситуация разрешена" : "Кризисная ситуация не найдена"
-        });
-
-            case "add-message":
-                const { userId: messageUserId, userName: messageUserName, content, channel } = data;
-        const teamMessage = TeamMoodMonitor.addMessage({
-          userId: messageUserId,
-          userName: messageUserName,
+      case "add-message":
+        const { type, content, tone, priority, targetUser, context } = data;
+        const message = PsychologicalSupport.addSupportMessage({
+          type,
           content,
-          channel,
-          type: "text"
+          tone,
+          priority,
+          targetUser,
+          context
         });
         return NextResponse.json({
           success: true,
-          message: "Сообщение добавлено для анализа настроения",
-          data: teamMessage
-        });
-
-      case "get-team-mood":
-        const teamMoodReport = TeamMoodMonitor.getTeamMoodReport();
-        return NextResponse.json({
-          success: true,
-          report: teamMoodReport
+          data: message,
+          message: "Сообщение поддержки добавлено"
         });
 
-      case "get-user-mood":
-        const { userId: moodUserId } = data;
-        const userMood = TeamMoodMonitor.getUserMood(moodUserId);
-        return NextResponse.json({
-          success: true,
-          mood: userMood
+      case "detect-crisis":
+        const { userId, severity, description, affectedUsers } = data;
+        const crisis = PsychologicalSupport.detectCrisis({
+          userId,
+          severity,
+          description,
+          affectedUsers
         });
-
-      case "get-mood-stats":
-        const moodStats = TeamMoodMonitor.getMoodStats();
         return NextResponse.json({
           success: true,
-          stats: moodStats
+          data: crisis,
+          message: "Кризис обнаружен и зарегистрирован"
         });
 
       default:
@@ -130,7 +77,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Ошибка обработки психологической поддержки:", error);
     return NextResponse.json(
-      { error: "Ошибка обработки психологической поддержки" },
+      { error: "Ошибка обработки поддержки" },
       { status: 500 }
     );
   }

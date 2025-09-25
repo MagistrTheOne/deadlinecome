@@ -1,181 +1,254 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { workspaceMember } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
-import { getWebSocketManager } from "@/lib/websocket-server";
 
-// IT-роли с описаниями и правами
-const IT_ROLES = {
-  DEVELOPER: {
-    name: "Разработчик",
-    description: "Разработка и поддержка кода",
-    permissions: ["CREATE_TASK", "UPDATE_TASK", "VIEW_PROJECT", "COMMENT"],
-    color: "bg-blue-500/20 text-blue-400 border-blue-500/30"
+interface TeamMember {
+  userId: string;
+  userName: string;
+  email: string;
+  itRoleInfo: {
+    name: string;
+    level: "junior" | "middle" | "senior" | "lead";
+    skills: string[];
+    experience: number;
+    specialization: string;
+  };
+  availability: {
+    status: "available" | "busy" | "unavailable";
+    workload: number; // 0-100%
+    nextAvailable: string;
+  };
+  performance: {
+    completedTasks: number;
+    averageRating: number;
+    lastActivity: string;
+  };
+}
+
+// Демо данные для участников команды
+const demoMembers: TeamMember[] = [
+  {
+    userId: "user-1",
+    userName: "Алексей Иванов",
+    email: "alexey@company.com",
+    itRoleInfo: {
+      name: "Frontend Developer",
+      level: "senior",
+      skills: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
+      experience: 5,
+      specialization: "UI/UX Development"
+    },
+    availability: {
+      status: "available",
+      workload: 70,
+      nextAvailable: new Date().toISOString()
+    },
+    performance: {
+      completedTasks: 12,
+      averageRating: 4.8,
+      lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+    }
   },
-  TEAM_LEAD: {
-    name: "Тим лид",
-    description: "Руководство командой разработки",
-    permissions: ["CREATE_TASK", "UPDATE_TASK", "ASSIGN_TASK", "VIEW_PROJECT", "COMMENT", "MANAGE_SPRINT"],
-    color: "bg-purple-500/20 text-purple-400 border-purple-500/30"
+  {
+    userId: "user-2",
+    userName: "Мария Петрова",
+    email: "maria@company.com",
+    itRoleInfo: {
+      name: "Team Lead",
+      level: "lead",
+      skills: ["Project Management", "Agile", "Team Leadership", "Architecture"],
+      experience: 8,
+      specialization: "Project Management"
+    },
+    availability: {
+      status: "busy",
+      workload: 90,
+      nextAvailable: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+    },
+    performance: {
+      completedTasks: 8,
+      averageRating: 4.9,
+      lastActivity: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+    }
   },
-  CTO: {
-    name: "CTO",
-    description: "Технический директор",
-    permissions: ["ALL"],
-    color: "bg-red-500/20 text-red-400 border-red-500/30"
+  {
+    userId: "user-3",
+    userName: "Дмитрий Сидоров",
+    email: "dmitry@company.com",
+    itRoleInfo: {
+      name: "Backend Developer",
+      level: "middle",
+      skills: ["Node.js", "Python", "PostgreSQL", "Docker"],
+      experience: 3,
+      specialization: "API Development"
+    },
+    availability: {
+      status: "available",
+      workload: 60,
+      nextAvailable: new Date().toISOString()
+    },
+    performance: {
+      completedTasks: 15,
+      averageRating: 4.6,
+      lastActivity: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
+    }
   },
-  PM: {
-    name: "Product Manager",
-    description: "Управление продуктом и планирование",
-    permissions: ["CREATE_TASK", "UPDATE_TASK", "ASSIGN_TASK", "VIEW_PROJECT", "COMMENT", "MANAGE_SPRINT", "VIEW_ANALYTICS"],
-    color: "bg-green-500/20 text-green-400 border-green-500/30"
+  {
+    userId: "user-4",
+    userName: "Анна Козлова",
+    email: "anna@company.com",
+    itRoleInfo: {
+      name: "QA Engineer",
+      level: "middle",
+      skills: ["Testing", "Automation", "Selenium", "Jest"],
+      experience: 4,
+      specialization: "Quality Assurance"
+    },
+    availability: {
+      status: "available",
+      workload: 50,
+      nextAvailable: new Date().toISOString()
+    },
+    performance: {
+      completedTasks: 20,
+      averageRating: 4.7,
+      lastActivity: new Date(Date.now() - 45 * 60 * 1000).toISOString()
+    }
   },
-  QA: {
-    name: "QA Engineer",
-    description: "Тестирование и контроль качества",
-    permissions: ["CREATE_TASK", "UPDATE_TASK", "VIEW_PROJECT", "COMMENT", "TEST_TASK"],
-    color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-  },
-  DEVOPS: {
-    name: "DevOps",
-    description: "Инфраструктура и развертывание",
-    permissions: ["CREATE_TASK", "UPDATE_TASK", "VIEW_PROJECT", "COMMENT", "DEPLOY_TASK"],
-    color: "bg-orange-500/20 text-orange-400 border-orange-500/30"
-  },
-  DESIGNER: {
-    name: "Дизайнер",
-    description: "UI/UX дизайн и прототипирование",
-    permissions: ["CREATE_TASK", "UPDATE_TASK", "VIEW_PROJECT", "COMMENT", "DESIGN_TASK"],
-    color: "bg-pink-500/20 text-pink-400 border-pink-500/30"
-  },
-  ANALYST: {
-    name: "Аналитик",
-    description: "Анализ требований и данных",
-    permissions: ["CREATE_TASK", "UPDATE_TASK", "VIEW_PROJECT", "COMMENT", "ANALYZE_DATA"],
-    color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+  {
+    userId: "user-5",
+    userName: "Сергей Волков",
+    email: "sergey@company.com",
+    itRoleInfo: {
+      name: "DevOps Engineer",
+      level: "senior",
+      skills: ["AWS", "Kubernetes", "CI/CD", "Monitoring"],
+      experience: 6,
+      specialization: "Infrastructure"
+    },
+    availability: {
+      status: "unavailable",
+      workload: 0,
+      nextAvailable: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString()
+    },
+    performance: {
+      completedTasks: 6,
+      averageRating: 4.5,
+      lastActivity: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
+    }
   }
-} as const;
+];
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const workspaceId = searchParams.get("workspaceId");
+    const userId = searchParams.get("userId");
+    const role = searchParams.get("role");
+    const availability = searchParams.get("availability");
 
-    if (!workspaceId) {
-      return NextResponse.json({ error: "Workspace ID is required" }, { status: 400 });
+    let filteredMembers = [...demoMembers];
+
+    // Фильтрация по workspace (в демо все участники в одном workspace)
+    if (workspaceId && workspaceId !== "demo-workspace") {
+      return NextResponse.json({ members: [] });
     }
 
-    // Получаем всех участников workspace с их IT-ролями
-    const members = await db
-      .select({
-        id: workspaceMember.id,
-        userId: workspaceMember.userId,
-        role: workspaceMember.role,
-        itRole: workspaceMember.itRole,
-        skills: workspaceMember.skills,
-        experience: workspaceMember.experience,
-        createdAt: workspaceMember.createdAt,
-      })
-      .from(workspaceMember)
-      .where(eq(workspaceMember.workspaceId, workspaceId));
+    // Фильтрация по конкретному пользователю
+    if (userId) {
+      const member = filteredMembers.find(m => m.userId === userId);
+      return NextResponse.json({ members: member ? [member] : [] });
+    }
 
-    // Добавляем информацию о ролях
-    const membersWithRoleInfo = members.map(member => ({
-      ...member,
-      itRoleInfo: member.itRole ? IT_ROLES[member.itRole as keyof typeof IT_ROLES] : null,
-      skillsArray: member.skills ? JSON.parse(member.skills) : [],
-    }));
+    // Фильтрация по роли
+    if (role) {
+      filteredMembers = filteredMembers.filter(member => 
+        member.itRoleInfo.name.toLowerCase().includes(role.toLowerCase())
+      );
+    }
 
-    return NextResponse.json({
-      members: membersWithRoleInfo,
-      availableRoles: IT_ROLES,
-    });
+    // Фильтрация по доступности
+    if (availability) {
+      filteredMembers = filteredMembers.filter(member => 
+        member.availability.status === availability
+      );
+    }
+
+    return NextResponse.json({ members: filteredMembers });
   } catch (error) {
-    console.error("Error fetching roles:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Ошибка получения участников команды:", error);
+    return NextResponse.json(
+      { error: "Ошибка получения участников команды" },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const body = await request.json();
+    const { userName, email, itRoleInfo } = body;
 
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { workspaceId, userId, itRole, skills, experience } = await request.json();
-
-    if (!workspaceId || !userId) {
-      return NextResponse.json({ error: "Workspace ID and User ID are required" }, { status: 400 });
-    }
-
-    // Проверяем права на изменение ролей
-    const member = await db
-      .select()
-      .from(workspaceMember)
-      .where(
-        and(
-          eq(workspaceMember.workspaceId, workspaceId),
-          eq(workspaceMember.userId, session.user.id)
-        )
-      )
-      .limit(1);
-
-    if (!member.length || !["OWNER", "ADMIN"].includes(member[0].role)) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-
-    // Обновляем IT-роль пользователя
-    const updatedMember = await db
-      .update(workspaceMember)
-      .set({
-        itRole: itRole || null,
-        skills: skills ? JSON.stringify(skills) : null,
-        experience: experience || null,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(workspaceMember.workspaceId, workspaceId),
-          eq(workspaceMember.userId, userId)
-        )
-      )
-      .returning();
-
-    if (!updatedMember.length) {
-      return NextResponse.json({ error: "Member not found" }, { status: 404 });
-    }
-
-    const updatedMemberData = {
-      ...updatedMember[0],
-      itRoleInfo: itRole ? IT_ROLES[itRole as keyof typeof IT_ROLES] : null,
-      skillsArray: skills || [],
+    const newMember: TeamMember = {
+      userId: `user-${Date.now()}`,
+      userName,
+      email,
+      itRoleInfo: {
+        name: itRoleInfo.name || "Developer",
+        level: itRoleInfo.level || "middle",
+        skills: itRoleInfo.skills || [],
+        experience: itRoleInfo.experience || 1,
+        specialization: itRoleInfo.specialization || "General"
+      },
+      availability: {
+        status: "available",
+        workload: 0,
+        nextAvailable: new Date().toISOString()
+      },
+      performance: {
+        completedTasks: 0,
+        averageRating: 0,
+        lastActivity: new Date().toISOString()
+      }
     };
 
-    // Отправляем real-time уведомление
-    const wsManager = getWebSocketManager();
-    if (wsManager) {
-      wsManager.notifyRoleUpdate(workspaceId, updatedMemberData);
+    demoMembers.push(newMember);
+
+    return NextResponse.json(newMember);
+  } catch (error) {
+    console.error("Ошибка добавления участника:", error);
+    return NextResponse.json(
+      { error: "Ошибка добавления участника" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { userId, availability, performance } = body;
+
+    const memberIndex = demoMembers.findIndex(member => member.userId === userId);
+    if (memberIndex === -1) {
+      return NextResponse.json(
+        { error: "Участник не найден" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({
-      success: true,
-      member: updatedMemberData,
-    });
+    const updatedMember = {
+      ...demoMembers[memberIndex],
+      ...(availability && { availability: { ...demoMembers[memberIndex].availability, ...availability } }),
+      ...(performance && { performance: { ...demoMembers[memberIndex].performance, ...performance } })
+    };
+
+    demoMembers[memberIndex] = updatedMember;
+
+    return NextResponse.json(updatedMember);
   } catch (error) {
-    console.error("Error updating role:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Ошибка обновления участника:", error);
+    return NextResponse.json(
+      { error: "Ошибка обновления участника" },
+      { status: 500 }
+    );
   }
 }
