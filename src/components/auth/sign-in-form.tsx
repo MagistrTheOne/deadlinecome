@@ -96,7 +96,8 @@ export function SignInForm() {
           </div>
           <Button 
             type="submit" 
-            className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500" 
+            variant="default"
+            className="w-full font-semibold py-3 px-6" 
             disabled={isLoading}
           >
             <Mail className="mr-2 h-5 w-5" />
@@ -127,7 +128,7 @@ export function SignInForm() {
             variant="outline"
             onClick={() => handleSocialSignIn("github")}
             disabled={isLoading}
-            className="border-2 border-gray-600 hover:border-gray-500 hover:bg-gray-800 transition-all duration-200 font-medium py-3 text-white"
+            className="font-medium py-3"
           >
             <Github className="mr-2 h-5 w-5" />
             GitHub
@@ -136,7 +137,7 @@ export function SignInForm() {
             variant="outline"
             onClick={() => handleSocialSignIn("google")}
             disabled={isLoading}
-            className="border-2 border-gray-600 hover:border-gray-500 hover:bg-gray-800 transition-all duration-200 font-medium py-3 text-white"
+            className="font-medium py-3"
           >
             <Mail className="mr-2 h-5 w-5" />
             Google

@@ -15,6 +15,8 @@ import { EnhancedAnalytics } from "@/components/ui/enhanced-analytics";
 import { AISmartWorkflows } from "@/components/ui/ai-smart-workflows";
 import { RealtimeAnalyticsDashboard } from "@/components/ui/realtime-analytics-dashboard";
 import { AdvancedAutomationRules } from "@/components/ui/advanced-automation-rules";
+import { EnhancedCollaboration } from "@/components/ui/enhanced-collaboration";
+import { SmartSprintPlanning } from "@/components/ui/smart-sprint-planning";
 import { RealTimeCollaboration } from "@/components/ui/real-time-collaboration";
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import Link from "next/link";
@@ -75,7 +77,7 @@ export default function DashboardPage() {
             <p className="text-xs text-white/60">
               У вас пока нет рабочих пространств
             </p>
-            <Button className="mt-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/30" size="sm" asChild>
+            <Button variant="glass" size="sm" asChild>
               <Link href="/workspaces">
                 <Plus className="mr-2 h-4 w-4" />
                 Создать
@@ -97,7 +99,7 @@ export default function DashboardPage() {
             <p className="text-xs text-white/60">
               Активных проектов
             </p>
-            <Button className="mt-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/30" size="sm" asChild>
+            <Button variant="glass" size="sm" asChild>
               <Link href="/projects">
                 <Plus className="mr-2 h-4 w-4" />
                 Создать проект
@@ -119,7 +121,7 @@ export default function DashboardPage() {
             <p className="text-xs text-white/60">
               Вы единственный участник
             </p>
-            <Button className="mt-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/30" size="sm" asChild>
+            <Button variant="glass" size="sm" asChild>
               <Link href="/team">
                 <Users className="mr-2 h-4 w-4" />
                 Управление командой
@@ -141,7 +143,7 @@ export default function DashboardPage() {
             <p className="text-xs text-white/60">
               Задач назначено на вас
             </p>
-            <Button className="mt-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/30" size="sm" asChild>
+            <Button variant="glass" size="sm" asChild>
               <Link href="/tasks">
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Посмотреть
@@ -175,6 +177,16 @@ export default function DashboardPage() {
       {/* Advanced Automation Rules */}
       <div className="mt-8">
         <AdvancedAutomationRules />
+      </div>
+
+      {/* Enhanced Collaboration */}
+      <div className="mt-8">
+        <EnhancedCollaboration />
+      </div>
+
+      {/* Smart Sprint Planning */}
+      <div className="mt-8">
+        <SmartSprintPlanning />
       </div>
 
       {/* Smart Assignment */}
