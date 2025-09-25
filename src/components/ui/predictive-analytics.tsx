@@ -121,33 +121,33 @@ export function PredictiveAnalytics() {
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case "critical":
-        return "bg-black/50 text-white border-white/30";
+        return "bg-analytics-rose/20 text-analytics-rose border-analytics-rose/30 backdrop-blur-sm";
       case "high":
-        return "bg-black/50 text-white border-white/30";
+        return "bg-analytics-orange/20 text-analytics-orange border-analytics-orange/30 backdrop-blur-sm";
       case "medium":
-        return "bg-black/50 text-white border-white/30";
+        return "bg-analytics-amber/20 text-analytics-amber border-analytics-amber/30 backdrop-blur-sm";
       case "low":
-        return "bg-black/50 text-white border-white/30";
+        return "bg-analytics-emerald/20 text-analytics-emerald border-analytics-emerald/30 backdrop-blur-sm";
       default:
-        return "bg-black/50 text-white border-white/30";
+        return "bg-glass-medium text-white border-white/20 backdrop-blur-sm";
     }
   };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case "increasing":
-        return <TrendingUp className="h-4 w-4 text-white" />;
+        return <TrendingUp className="h-4 w-4 text-analytics-emerald" />;
       case "decreasing":
-        return <TrendingDown className="h-4 w-4 text-white" />;
+        return <TrendingDown className="h-4 w-4 text-analytics-rose" />;
       default:
-        return <Target className="h-4 w-4 text-white" />;
+        return <Target className="h-4 w-4 text-analytics-cyan" />;
     }
   };
 
   const getProbabilityColor = (probability: number) => {
-    if (probability >= 70) return "text-white";
-    if (probability >= 40) return "text-white/80";
-    return "text-white/60";
+    if (probability >= 70) return "text-analytics-rose";
+    if (probability >= 40) return "text-analytics-amber";
+    return "text-analytics-emerald";
   };
 
   return (
@@ -280,30 +280,30 @@ export function PredictiveAnalytics() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="bg-black/30 backdrop-blur-sm border border-white/20 rounded-lg p-4">
+            <div className="bg-glass-dark backdrop-blur-sm border border-analytics-emerald/20 rounded-lg p-4 hover:border-analytics-emerald/40 transition-all duration-300">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-white" />
+                <TrendingUp className="h-4 w-4 text-analytics-emerald" />
                 <span className="text-white font-medium">Скорость разработки</span>
               </div>
-              <div className="text-2xl font-bold text-white mb-1">+12%</div>
+              <div className="text-2xl font-bold text-analytics-emerald mb-1">+12%</div>
               <div className="text-white/60 text-sm">за последний месяц</div>
             </div>
             
-            <div className="bg-black/30 backdrop-blur-sm border border-white/20 rounded-lg p-4">
+            <div className="bg-glass-dark backdrop-blur-sm border border-analytics-cyan/20 rounded-lg p-4 hover:border-analytics-cyan/40 transition-all duration-300">
               <div className="flex items-center gap-2 mb-2">
-                <Target className="h-4 w-4 text-white" />
+                <Target className="h-4 w-4 text-analytics-cyan" />
                 <span className="text-white font-medium">Точность оценок</span>
               </div>
-              <div className="text-2xl font-bold text-white mb-1">87%</div>
+              <div className="text-2xl font-bold text-analytics-cyan mb-1">87%</div>
               <div className="text-white/60 text-sm">соответствие планам</div>
             </div>
             
-            <div className="bg-black/30 backdrop-blur-sm border border-white/20 rounded-lg p-4">
+            <div className="bg-glass-dark backdrop-blur-sm border border-analytics-violet/20 rounded-lg p-4 hover:border-analytics-violet/40 transition-all duration-300">
               <div className="flex items-center gap-2 mb-2">
-                <Calendar className="h-4 w-4 text-white" />
+                <Calendar className="h-4 w-4 text-analytics-violet" />
                 <span className="text-white font-medium">Соблюдение дедлайнов</span>
               </div>
-              <div className="text-2xl font-bold text-white mb-1">92%</div>
+              <div className="text-2xl font-bold text-analytics-violet mb-1">92%</div>
               <div className="text-white/60 text-sm">вовремя выполнено</div>
             </div>
           </div>

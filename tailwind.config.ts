@@ -49,6 +49,24 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Premium analytics colors
+        analytics: {
+          emerald: "#10b981",
+          cyan: "#06b6d4", 
+          violet: "#8b5cf6",
+          amber: "#f59e0b",
+          rose: "#f43f5e",
+          indigo: "#6366f1",
+          teal: "#14b8a6",
+          orange: "#f97316",
+          pink: "#ec4899",
+          lime: "#84cc16",
+        },
+        glass: {
+          light: "rgba(255, 255, 255, 0.1)",
+          medium: "rgba(255, 255, 255, 0.05)",
+          dark: "rgba(0, 0, 0, 0.2)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

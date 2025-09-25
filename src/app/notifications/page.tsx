@@ -13,7 +13,6 @@ import {
   Info, 
   X, 
   Filter,
-  MarkAsRead,
   Trash2
 } from "lucide-react";
 
@@ -179,9 +178,18 @@ export default function NotificationsPage() {
             size="sm"
             onClick={markAllAsRead}
             disabled={unreadCount === 0}
-            className="border-white/20 text-white/80 hover:text-white hover:bg-white/10"
+            className="border-white/20 text-white/80 hover:text-white hover:bg-white/10 flex items-center glassmorphism"
           >
-            <MarkAsRead className="mr-2 h-4 w-4" />
+            <svg
+              className="mr-2 h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <rect x="3" y="9" width="14" height="2" rx="1" fill="currentColor" />
+              <rect x="9" y="3" width="2" height="14" rx="1" fill="currentColor" />
+            </svg>
             Отметить все как прочитанные
           </Button>
         </div>

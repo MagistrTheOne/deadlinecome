@@ -11,6 +11,10 @@ import { AdvancedFeatures } from "@/components/ui/advanced-features";
 import { AIAssistant } from "@/components/ui/ai-assistant";
 import { SmartAssignment } from "@/components/ui/smart-assignment";
 import { PredictiveAnalytics } from "@/components/ui/predictive-analytics";
+import { EnhancedAnalytics } from "@/components/ui/enhanced-analytics";
+import { AISmartWorkflows } from "@/components/ui/ai-smart-workflows";
+import { RealtimeAnalyticsDashboard } from "@/components/ui/realtime-analytics-dashboard";
+import { AdvancedAutomationRules } from "@/components/ui/advanced-automation-rules";
 import { RealTimeCollaboration } from "@/components/ui/real-time-collaboration";
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import Link from "next/link";
@@ -163,9 +167,29 @@ export default function DashboardPage() {
         <AdvancedFeatures />
       </div>
 
+      {/* AI Smart Workflows */}
+      <div className="mt-8">
+        <AISmartWorkflows />
+      </div>
+
+      {/* Advanced Automation Rules */}
+      <div className="mt-8">
+        <AdvancedAutomationRules />
+      </div>
+
       {/* Smart Assignment */}
       <div className="mt-8">
         <SmartAssignment />
+      </div>
+
+      {/* Real-time Analytics Dashboard */}
+      <div className="mt-8">
+        <RealtimeAnalyticsDashboard />
+      </div>
+
+      {/* Enhanced Analytics */}
+      <div className="mt-8">
+        <EnhancedAnalytics />
       </div>
 
       {/* Predictive Analytics */}
