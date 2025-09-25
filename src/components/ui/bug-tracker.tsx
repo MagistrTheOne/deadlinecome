@@ -584,7 +584,7 @@ function CreateBugForm({ onClose }: { onClose: () => void }) {
 
 // Компонент детального просмотра бага
 function BugDetailsDialog({ bug, onClose }: { bug: BugReport; onClose: () => void }) {
-  const CategoryIcon = getCategoryIcon(bug.category);
+  const CategoryIcon = Bug;
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -603,7 +603,7 @@ function BugDetailsDialog({ bug, onClose }: { bug: BugReport; onClose: () => voi
                 <CardTitle className="text-white text-sm">Статус</CardTitle>
               </CardHeader>
               <CardContent>
-                <Badge className={getStatusColor(bug.status)}>
+                <Badge className="bg-blue-500 text-white">
                   {bug.status}
                 </Badge>
               </CardContent>
@@ -614,7 +614,7 @@ function BugDetailsDialog({ bug, onClose }: { bug: BugReport; onClose: () => voi
                 <CardTitle className="text-white text-sm">Приоритет</CardTitle>
               </CardHeader>
               <CardContent>
-                <Badge className={getPriorityColor(bug.priority)}>
+                <Badge className="bg-orange-500 text-white">
                   {bug.priority}
                 </Badge>
               </CardContent>

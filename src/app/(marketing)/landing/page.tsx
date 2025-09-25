@@ -25,103 +25,113 @@ import Link from "next/link";
 const features = [
   {
     icon: Brain,
-    title: "AI-Powered Smart Workflows",
-    description: "Автоматическое создание задач на основе коммитов, умное назначение исполнителей и AI-анализ времени выполнения",
-    category: "AI & Automation"
-  },
-  {
-    icon: BarChart3,
-    title: "Real-time Analytics Dashboard", 
-    description: "Живые метрики команды с WebSocket обновлениями, предиктивная аналитика и heatmap активности",
-    category: "Analytics"
+    title: "AI Security Scanner",
+    description: "Автоматическое сканирование уязвимостей, анализ безопасности кода и предсказание атак с Ольгой (AI Security Expert)",
+    category: "AI Security"
   },
   {
     icon: Zap,
-    title: "Advanced Automation Rules",
-    description: "Workflow automation с условными триггерами, автоматические уведомления и интеграции",
-    category: "AI & Automation"
-  },
-  {
-    icon: Users,
-    title: "Enhanced Collaboration",
-    description: "Real-time совместное редактирование, комментарии с упоминаниями и видеозвонки",
-    category: "Collaboration"
+    title: "AI Performance Analyzer", 
+    description: "Оптимизация производительности, анализ узких мест и автоматические рекомендации с Павлом (AI Performance Engineer)",
+    category: "AI Performance"
   },
   {
     icon: Target,
-    title: "Smart Sprint Planning",
-    description: "AI-помощник для планирования спринтов, автоматическое распределение задач по приоритетам",
-    category: "Planning"
+    title: "AI Sprint Planning",
+    description: "Умное планирование спринтов, автоматическое распределение задач и предсказание рисков с Михаилом (AI PM)",
+    category: "AI Planning"
+  },
+  {
+    icon: BarChart3,
+    title: "AI Documentation Generator",
+    description: "Автоматическая генерация документации, API docs и технических спецификаций с Татьяной (AI Documentation)",
+    category: "AI Documentation"
+  },
+  {
+    icon: Users,
+    title: "AI Analytics Dashboard",
+    description: "Продвинутая аналитика, предсказательные модели и инсайты для команды со Светланой (AI Analytics)",
+    category: "AI Analytics"
   },
   {
     icon: Shield,
-    title: "Advanced Security",
-    description: "Роль-базированный доступ, audit log, двухфакторная аутентификация и SSO",
-    category: "Security"
+    title: "AI CI/CD Assistant",
+    description: "Автоматизация CI/CD, умные пайплайны и предсказание сбоев с Андреем (AI DevOps)",
+    category: "AI DevOps"
   }
 ];
 
 const pricingPlans = [
   {
-    name: "Free",
-    price: "0",
-    period: "навсегда",
-    description: "Идеально для небольших команд и личных проектов",
+    name: "Starter",
+    price: "49",
+    period: "в месяц",
+    description: "Идеально для стартапов и небольших команд",
     features: [
-      "До 5 участников",
-      "Неограниченные проекты",
-      "Базовые доски задач",
-      "AI-ассистент (10 запросов/день)",
-      "Базовая аналитика",
-      "Email поддержка"
+      "До 10 участников",
+      "5 AI-специалистов",
+      "Базовые AI-фичи",
+      "AI Security Scanner",
+      "AI Performance Analyzer",
+      "AI Documentation",
+      "Email поддержка",
+      "Базовые интеграции"
     ],
     limitations: [
-      "Нет интеграций",
-      "Нет автоматизации",
-      "Ограниченная аналитика"
+      "Ограниченная аналитика",
+      "Нет кастомных AI",
+      "Стандартная безопасность"
     ],
-    buttonText: "Начать бесплатно",
+    buttonText: "Начать с Starter",
     popular: false,
     icon: Star
   },
   {
-    name: "Pro",
-    price: "29",
+    name: "Professional",
+    price: "149",
     period: "в месяц",
-    description: "Для растущих команд, которым нужна мощная автоматизация",
+    description: "Для растущих команд с полной AI-командой",
     features: [
-      "До 25 участников",
-      "Неограниченные проекты",
-      "Продвинутые доски и workflow",
-      "AI-ассистент (безлимит)",
-      "Полная аналитика и отчеты",
-      "Интеграции с популярными сервисами",
-      "Автоматизация и правила",
+      "До 50 участников",
+      "12 AI-специалистов",
+      "Все AI-фичи",
+      "AI Security Scanner",
+      "AI Performance Analyzer", 
+      "AI Sprint Planning",
+      "AI Documentation Generator",
+      "AI Analytics Dashboard",
+      "AI CI/CD Assistant",
+      "AI Meeting Assistant",
+      "AI Burnout Detection",
+      "AI Test Generation",
+      "AI Cost Optimization",
       "Приоритетная поддержка",
-      "Экспорт данных"
+      "Расширенные интеграции"
     ],
     limitations: [],
-    buttonText: "Попробовать Pro",
+    buttonText: "Попробовать Professional",
     popular: true,
     icon: Rocket
   },
   {
     name: "Enterprise",
-    price: "99",
+    price: "499",
     period: "в месяц",
-    description: "Для крупных организаций с особыми требованиями",
+    description: "Для крупных организаций с кастомными AI",
     features: [
       "Неограниченные участники",
-      "Неограниченные проекты",
-      "Все функции Pro",
-      "Кастомные интеграции",
+      "12 AI-специалистов + кастомные",
+      "Все AI-фичи",
+      "Кастомные AI-модели",
+      "On-premise развертывание",
       "SSO и LDAP",
       "Расширенная безопасность",
-      "Dedicated менеджер",
+      "Dedicated AI-менеджер",
       "SLA 99.9%",
-      "On-premise развертывание",
       "Кастомные отчеты",
-      "API доступ"
+      "API доступ",
+      "White-label решение",
+      "24/7 поддержка"
     ],
     limitations: [],
     buttonText: "Связаться с нами",
@@ -174,13 +184,13 @@ export default function LandingPage() {
             </Badge>
             
             <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
-              DeadLine
+              AI & Human Collaboration IT
             </h1>
             
             <p className="text-xl md:text-2xl text-white mb-8 leading-relaxed">
-              AI-управляемая платформа для команд, которая превращает хаос в порядок. 
+              Первая в мире платформа с полной AI-командой разработки. 
               <br />
-              <span className="text-white font-semibold">Умная автоматизация</span> + <span className="text-white font-semibold">Предиктивная аналитика</span> + <span className="text-white font-semibold">Real-time коллаборация</span>
+              <span className="text-white font-semibold">12 AI-специалистов</span> + <span className="text-white font-semibold">Автоматизация процессов</span> + <span className="text-white font-semibold">Предиктивная аналитика</span>
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -191,7 +201,7 @@ export default function LandingPage() {
                 asChild
               >
                 <Link href="/sign-up">
-                  Начать бесплатно
+                  УЛЬТАЙ РЫНОК С AI-КОМАНДОЙ!
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -202,14 +212,14 @@ export default function LandingPage() {
                 className="px-8 py-4 text-lg"
                 asChild
               >
-                <Link href="#demo">
-                  Посмотреть демо
+                <Link href="/contact">
+                  Связаться с MagistrTheOne
                 </Link>
               </Button>
             </div>
             
             <p className="text-white/60 mt-4 text-sm">
-              Без кредитной карты • Настройка за 2 минуты • 14 дней бесплатно
+              Автор: <span className="text-white font-medium">@MagistrTheOne</span> • 2025 • AI Revolution
             </p>
           </div>
         </div>
@@ -220,11 +230,11 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-              Мощные возможности для <span className="text-white font-bold">современных команд</span>
+              <span className="text-white font-bold">12 AI-специалистов</span> работают для вашей команды
             </h2>
             <p className="text-xl text-white max-w-3xl mx-auto">
-              От AI-автоматизации до предиктивной аналитики — все инструменты, 
-              которые нужны вашей команде для достижения целей
+              От AI Security Scanner до AI Cost Optimization — полная AI-команда разработки, 
+              которая автоматизирует весь цикл создания ПО
             </p>
           </div>
 
@@ -258,11 +268,11 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-              Простые и <span className="text-white font-bold">прозрачные</span> тарифы
+              Выберите <span className="text-white font-bold">AI-команду</span> для вашего проекта
             </h2>
             <p className="text-xl text-white max-w-2xl mx-auto">
-              Выберите план, который подходит вашей команде. 
-              Всегда можно изменить или отменить в любой момент.
+              От 5 до 12 AI-специалистов работают 24/7 для автоматизации 
+              ваших процессов разработки и достижения целей.
             </p>
           </div>
 
@@ -365,15 +375,76 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* About Developer Section */}
+      <section className="py-20 bg-black">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+              О <span className="text-white font-bold">разработчике</span>
+            </h2>
+            <p className="text-xl text-white max-w-2xl mx-auto">
+              MagistrTheOne — Full-Stack Developer & AI Engineer, создавший первую в мире 
+              платформу с полной AI-командой разработки
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <Card className="bg-black/50 backdrop-blur-sm border-white/20">
+              <CardContent className="p-8">
+                <div className="flex flex-col md:flex-row items-center gap-8">
+                  <div className="flex-shrink-0">
+                    <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-4xl font-bold">M</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-2xl font-bold text-white mb-2">MagistrTheOne</h3>
+                    <p className="text-white/80 text-lg mb-4">Full-Stack Developer & AI Engineer</p>
+                    <p className="text-white/70 mb-6">
+                      Создатель революционной платформы AI & Human Collaboration IT. 
+                      Специализируется на разработке AI-решений, автоматизации процессов 
+                      и создании инновационных технологий для команд разработки.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10" asChild>
+                        <a href="mailto:maxonyushko71@gmail.com" target="_blank" rel="noopener noreferrer">
+                          maxonyushko71@gmail.com
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10" asChild>
+                        <a href="https://t.me/MagistrTheOne" target="_blank" rel="noopener noreferrer">
+                          Telegram: @MagistrTheOne
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10" asChild>
+                        <a href="https://github.com/MagistrTheOne" target="_blank" rel="noopener noreferrer">
+                          GitHub: MagistrTheOne
+                        </a>
+                      </Button>
+                    </div>
+                    
+                    <p className="text-white/50 text-sm mt-4">
+                      Россия, Краснодар • 2025
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section id="contact" className="py-20 bg-black">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-            Готовы <span className="text-white font-bold">революционизировать</span> управление проектами?
+            Готовы <span className="text-white font-bold">ультануть рынок</span> с AI-командой?
           </h2>
           <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
-            Присоединяйтесь к тысячам команд, которые уже используют DeadLine 
-            для достижения своих целей быстрее и эффективнее.
+            Присоединяйтесь к революции AI & Human Collaboration IT. 
+            12 AI-специалистов работают 24/7 для автоматизации ваших процессов.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -384,7 +455,7 @@ export default function LandingPage() {
               asChild
             >
               <Link href="/sign-up">
-                Начать бесплатно
+                УЛЬТАЙ РЫНОК С AI-КОМАНДОЙ!
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -395,8 +466,8 @@ export default function LandingPage() {
               className="px-8 py-4 text-lg"
               asChild
             >
-              <Link href="/demo">
-                Запросить демо
+              <Link href="/contact">
+                Связаться с MagistrTheOne
               </Link>
             </Button>
           </div>
@@ -410,13 +481,13 @@ export default function LandingPage() {
             <div className="md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                  <span className="text-black font-bold text-lg">D</span>
+                  <span className="text-black font-bold text-lg">AI</span>
                 </div>
-                <span className="text-xl font-bold text-white">DeadLine</span>
+                <span className="text-xl font-bold text-white">AI & Human Collaboration IT</span>
               </div>
               <p className="text-white/70 mb-4 max-w-md">
-                AI-управляемая платформа для команд, которая превращает хаос в порядок. 
-                Умная автоматизация, предиктивная аналитика и real-time коллаборация.
+                Первая в мире платформа с полной AI-командой разработки. 
+                12 AI-специалистов работают 24/7 для автоматизации ваших процессов.
               </p>
               <div className="flex space-x-4">
                 <Button variant="ghost" size="sm" className="text-white/70 hover:text-white" asChild>
@@ -430,13 +501,13 @@ export default function LandingPage() {
                   </a>
                 </Button>
                 <Button variant="ghost" size="sm" className="text-white/70 hover:text-white" asChild>
-                  <a href="https://linkedin.com/in/magistrtheone" target="_blank" rel="noopener noreferrer">
+                  <a href="https://www.linkedin.com/in/magistrtheoneboss/" target="_blank" rel="noopener noreferrer">
                     LinkedIn
                   </a>
                 </Button>
               </div>
               <p className="text-white/50 text-sm mt-2">
-                Разработано <span className="text-white font-medium">@MagistrTheOne</span>
+                Автор: <span className="text-white font-medium">MagistrTheOne</span> • Full-Stack Developer & AI Engineer • 2025
               </p>
             </div>
             
@@ -463,7 +534,7 @@ export default function LandingPage() {
           
           <div className="border-t border-white/10 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-white/60 text-sm">
-              © 2025 DeadLine. Все права защищены.
+              © 2025 AI & Human Collaboration IT by MagistrTheOne (Full-Stack Developer & AI Engineer). Все права защищены.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="/privacy" className="text-white/60 hover:text-white text-sm transition-colors">

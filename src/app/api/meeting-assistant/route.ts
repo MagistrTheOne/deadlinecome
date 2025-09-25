@@ -75,9 +75,6 @@ async function createAIMeeting(meetingType: string, participants: any[], agenda:
   return {
     id: meetingId,
     type: meetingType,
-    participants,
-    agenda,
-    duration,
     scheduledAt: new Date().toISOString(),
     ...meeting,
   };
