@@ -29,7 +29,7 @@ export function SignInForm() {
       });
 
       if (result.error) {
-        setError(result.error.message);
+        setError(result.error.message || "Ошибка при входе");
       } else {
         router.push("/dashboard");
         router.refresh();
@@ -58,9 +58,9 @@ export function SignInForm() {
 
   return (
     <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Вход в систему</CardTitle>
-        <CardDescription>
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl font-bold text-white">Вход в систему</CardTitle>
+        <CardDescription className="text-gray-400">
           Войдите в свой аккаунт, чтобы продолжить
         </CardDescription>
       </CardHeader>
@@ -94,9 +94,20 @@ export function SignInForm() {
               disabled={isLoading}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            <Mail className="mr-2 h-4 w-4" />
-            {isLoading ? "Вход..." : "Войти"}
+          <Button 
+            type="submit" 
+            className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500" 
+            disabled={isLoading}
+          >
+            <Mail className="mr-2 h-5 w-5" />
+            {isLoading ? (
+              <span className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Вход...
+              </span>
+            ) : (
+              "Войти в систему"
+            )}
           </Button>
         </form>
 
@@ -116,23 +127,28 @@ export function SignInForm() {
             variant="outline"
             onClick={() => handleSocialSignIn("github")}
             disabled={isLoading}
+            className="border-2 border-gray-600 hover:border-gray-500 hover:bg-gray-800 transition-all duration-200 font-medium py-3 text-white"
           >
-            <Github className="mr-2 h-4 w-4" />
+            <Github className="mr-2 h-5 w-5" />
             GitHub
           </Button>
           <Button
             variant="outline"
             onClick={() => handleSocialSignIn("google")}
             disabled={isLoading}
+            className="border-2 border-gray-600 hover:border-gray-500 hover:bg-gray-800 transition-all duration-200 font-medium py-3 text-white"
           >
-            <Mail className="mr-2 h-4 w-4" />
+            <Mail className="mr-2 h-5 w-5" />
             Google
           </Button>
         </div>
 
         <div className="text-center text-sm">
           Нет аккаунта?{" "}
-          <a href="/sign-up" className="underline">
+          <a 
+            href="/sign-up" 
+            className="text-gray-300 hover:text-white font-semibold underline decoration-2 underline-offset-2 hover:decoration-white transition-colors duration-200"
+          >
             Зарегистрироваться
           </a>
         </div>

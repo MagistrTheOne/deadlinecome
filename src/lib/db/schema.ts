@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -128,4 +128,40 @@ export const issue = pgTable("issue", {
   updatedAt: timestamp("updated_at")
     .$onUpdate(() => new Date())
     .notNull(),
+  // AI-related fields
+  embedding: text("embedding"), // JSON string of vector embedding
+  aiGenerated: boolean("ai_generated").default(false),
+  estimatedHours: integer("estimated_hours"),
+  actualHours: integer("actual_hours"),
+});
+
+// AI Assistant conversation history
+export const aiConversation = pgTable("ai_conversation", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  workspaceId: text("workspace_id")
+    .references(() => workspace.id, { onDelete: "cascade" }),
+  query: text("query").notNull(),
+  response: text("response").notNull(),
+  context: text("context"), // JSON string of context used
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// AI Task suggestions
+export const aiTaskSuggestion = pgTable("ai_task_suggestion", {
+  id: text("id").primaryKey(),
+  workspaceId: text("workspace_id")
+    .notNull()
+    .references(() => workspace.id, { onDelete: "cascade" }),
+  projectId: text("project_id")
+    .references(() => project.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  priority: text("priority").$type<"LOWEST" | "LOW" | "MEDIUM" | "HIGH" | "HIGHEST">(),
+  estimatedHours: integer("estimated_hours"),
+  reasoning: text("reasoning"), // AI reasoning for the suggestion
+  status: text("status").notNull().$type<"PENDING" | "ACCEPTED" | "REJECTED">().default("PENDING"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
