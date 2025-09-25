@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 
@@ -10,21 +11,54 @@ interface ChartData {
   created: number;
 }
 
-const mockData: ChartData[] = [
-  { date: "Пн", tasks: 12, completed: 8, created: 5 },
-  { date: "Вт", tasks: 15, completed: 12, created: 7 },
-  { date: "Ср", tasks: 18, completed: 15, created: 6 },
-  { date: "Чт", tasks: 14, completed: 11, created: 4 },
-  { date: "Пт", tasks: 16, completed: 13, created: 8 },
-  { date: "Сб", tasks: 8, completed: 6, created: 2 },
-  { date: "Вс", tasks: 5, completed: 4, created: 1 },
-];
+// Функция для получения реальных данных статистики
+const getRealChartData = async (): Promise<ChartData[]> => {
+  try {
+    const response = await fetch('/api/activity/stats');
+    if (response.ok) {
+      const data = await response.json();
+      return data.chartData || [];
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки статистики:', error);
+  }
+  
+  // Fallback данные
+  return [
+    { date: "Пн", tasks: 2, completed: 1, created: 1 },
+    { date: "Вт", tasks: 3, completed: 2, created: 1 },
+    { date: "Ср", tasks: 1, completed: 1, created: 0 },
+    { date: "Чт", tasks: 2, completed: 1, created: 1 },
+    { date: "Пт", tasks: 1, completed: 0, created: 1 },
+    { date: "Сб", tasks: 0, completed: 0, created: 0 },
+    { date: "Вс", tasks: 0, completed: 0, created: 0 },
+  ];
+};
 
 export function ActivityChart() {
-  const maxTasks = Math.max(...mockData.map(d => d.tasks));
-  const totalCompleted = mockData.reduce((sum, d) => sum + d.completed, 0);
-  const totalCreated = mockData.reduce((sum, d) => sum + d.created, 0);
-  const completionRate = Math.round((totalCompleted / (totalCompleted + totalCreated)) * 100);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadChartData = async () => {
+      setLoading(true);
+      try {
+        const realData = await getRealChartData();
+        setChartData(realData);
+      } catch (error) {
+        console.error('Ошибка загрузки статистики:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadChartData();
+  }, []);
+
+  const maxTasks = chartData.length > 0 ? Math.max(...chartData.map(d => d.tasks)) : 0;
+  const totalCompleted = chartData.reduce((sum, d) => sum + d.completed, 0);
+  const totalCreated = chartData.reduce((sum, d) => sum + d.created, 0);
+  const completionRate = totalCompleted + totalCreated > 0 ? Math.round((totalCompleted / (totalCompleted + totalCreated)) * 100) : 0;
 
   return (
     <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
@@ -57,7 +91,17 @@ export function ActivityChart() {
 
         {/* Mini Chart */}
         <div className="space-y-3">
-          {mockData.map((data, index) => {
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            </div>
+          ) : chartData.length === 0 ? (
+            <div className="text-center py-8 text-white/60">
+              <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Нет данных для отображения</p>
+            </div>
+          ) : (
+            chartData.map((data, index) => {
             const completedHeight = (data.completed / maxTasks) * 100;
             const createdHeight = (data.created / maxTasks) * 100;
             
@@ -85,7 +129,8 @@ export function ActivityChart() {
                 </div>
               </div>
             );
-          })}
+            })
+          )}
         </div>
 
         {/* Legend */}

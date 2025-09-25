@@ -55,6 +55,37 @@ export class OpenAIService {
   }
 
   /**
+   * Universal chat method
+   */
+  static async chat(
+    messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
+    options?: {
+      temperature?: number;
+      maxTokens?: number;
+    }
+  ): Promise<string> {
+    try {
+      const systemPrompt = `Ты - AI-ассистент Василий для системы управления проектами DeadLine. 
+      Отвечай на русском языке, будь полезным и дружелюбным.`;
+      
+      const langchainMessages = [
+        new SystemMessage(systemPrompt),
+        ...messages.map(msg => 
+          msg.role === "user" 
+            ? new HumanMessage(msg.content)
+            : new SystemMessage(msg.content)
+        )
+      ];
+
+      const response = await chatModel.invoke(langchainMessages);
+      return response.content as string;
+    } catch (error) {
+      console.error("Error in OpenAI chat:", error);
+      throw new Error("Failed to get AI response");
+    }
+  }
+
+  /**
    * Ask AI assistant with context from similar tasks
    */
   static async askAssistant(

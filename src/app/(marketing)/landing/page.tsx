@@ -148,7 +148,7 @@ export default function LandingPage() {
               <a href="#features" className="text-white hover:text-white/80 transition-colors">Возможности</a>
               <a href="#pricing" className="text-white hover:text-white/80 transition-colors">Тарифы</a>
               <a href="/billing" className="text-white hover:text-white/80 transition-colors">Биллинг</a>
-              <a href="#contact" className="text-white hover:text-white/80 transition-colors">Контакты</a>
+              <a href="/contact" className="text-white hover:text-white/80 transition-colors">Контакты</a>
             </div>
             
             <div className="flex items-center space-x-4">
@@ -419,16 +419,25 @@ export default function LandingPage() {
                 Умная автоматизация, предиктивная аналитика и real-time коллаборация.
               </p>
               <div className="flex space-x-4">
-                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
-                  Twitter
+                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white" asChild>
+                  <a href="https://t.me/MagistrTheOne" target="_blank" rel="noopener noreferrer">
+                    Telegram
+                  </a>
                 </Button>
-                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
-                  LinkedIn
+                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white" asChild>
+                  <a href="https://github.com/MagistrTheOne" target="_blank" rel="noopener noreferrer">
+                    GitHub
+                  </a>
                 </Button>
-                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
-                  GitHub
+                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white" asChild>
+                  <a href="https://linkedin.com/in/magistrtheone" target="_blank" rel="noopener noreferrer">
+                    LinkedIn
+                  </a>
                 </Button>
               </div>
+              <p className="text-white/50 text-sm mt-2">
+                Разработано <span className="text-white font-medium">@MagistrTheOne</span>
+              </p>
             </div>
             
             <div>
@@ -454,7 +463,7 @@ export default function LandingPage() {
           
           <div className="border-t border-white/10 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-white/60 text-sm">
-              © 2024 DeadLine. Все права защищены.
+              © 2025 DeadLine. Все права защищены.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="/privacy" className="text-white/60 hover:text-white text-sm transition-colors">

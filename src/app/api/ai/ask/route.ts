@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { issue, aiConversation } from "@/lib/db/schema";
-import { OpenAIService, TaskContext } from "@/lib/ai/openai-service";
+import { AIService, TaskContext } from "@/lib/ai/ai-service";
+import { VasilyService } from "@/lib/ai/vasily-service";
 import { eq, desc } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
@@ -16,10 +17,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { query, workspaceId } = await request.json();
+    const { query, workspaceId, projectId } = await request.json();
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
+    }
+
+    // Проверяем, является ли запрос специальной командой
+    if (query.startsWith('/')) {
+      const vasilyResponse = await VasilyService.handleSpecialCommand(query);
+      return NextResponse.json(vasilyResponse);
     }
 
     // Поиск похожих задач для контекста
@@ -60,8 +67,14 @@ export async function POST(request: NextRequest) {
       }));
     }
 
-    // Получаем ответ от AI
-    const aiResponse = await OpenAIService.askAssistant(query, context);
+    // Получаем ответ от Василия
+    const vasilyResponse = await VasilyService.chat(query, {
+      userId: session.user.id,
+      workspaceId: workspaceId || undefined,
+      projectId: projectId || undefined,
+      timeOfDay: new Date().getHours(),
+      userActivity: context.length > 0 ? "project_management" : "general_chat"
+    });
 
     // Сохраняем разговор в историю
     await db.insert(aiConversation).values({
@@ -69,14 +82,11 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       workspaceId: workspaceId || null,
       query,
-      response: aiResponse.response,
+      response: vasilyResponse.response,
       context: JSON.stringify(context),
     });
 
-    return NextResponse.json({
-      response: aiResponse.response,
-      context: context.length > 0 ? context : undefined,
-    });
+    return NextResponse.json(vasilyResponse);
   } catch (error) {
     console.error("Error in AI ask endpoint:", error);
     return NextResponse.json(

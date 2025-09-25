@@ -28,60 +28,62 @@ interface ActivityItem {
   priority?: "low" | "medium" | "high";
 }
 
-const mockActivities: ActivityItem[] = [
-  {
-    id: "1",
-    type: "task_completed",
-    title: "Задача завершена",
-    description: "Создать дизайн главной страницы",
-    user: "MagistrTheOne",
-    timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 минут назад
-    project: "DeadLine",
-    priority: "high"
-  },
-  {
-    id: "2",
-    type: "comment_added",
-    title: "Добавлен комментарий",
-    description: "Отличная работа! Нужно добавить анимации",
-    user: "MagistrTheOne",
-    timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 минут назад
-    project: "DeadLine"
-  },
-  {
-    id: "3",
-    type: "task_created",
-    title: "Создана новая задача",
-    description: "Реализовать Drag & Drop функциональность",
-    user: "MagistrTheOne",
-    timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 минут назад
-    project: "DeadLine",
-    priority: "high"
-  },
-  {
-    id: "4",
-    type: "project_created",
-    title: "Создан новый проект",
-    description: "DeadLine - Система управления проектами",
-    user: "MagistrTheOne",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 часа назад
-    project: "DeadLine"
-  },
-  {
-    id: "5",
-    type: "deadline_approaching",
-    title: "Приближается дедлайн",
-    description: "Завершить интеграцию с API",
-    user: "MagistrTheOne",
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 часа назад
-    project: "DeadLine",
-    priority: "high"
+// Функция для получения реальных данных активности
+const getRealActivities = async (): Promise<ActivityItem[]> => {
+  try {
+    const response = await fetch('/api/activity');
+    if (response.ok) {
+      const data = await response.json();
+      return data.activities || [];
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки активности:', error);
   }
-];
+  
+  // Fallback данные если API недоступен
+  return [
+    {
+      id: "1",
+      type: "task_completed",
+      title: "Задача завершена",
+      description: "Настройка AI-ассистента Василия",
+      user: "MagistrTheOne",
+      timestamp: new Date(Date.now() - 5 * 60 * 1000),
+      project: "DeadLine",
+      priority: "high"
+    },
+    {
+      id: "2",
+      type: "comment_added",
+      title: "Добавлен комментарий",
+      description: "Василий теперь умеет говорить голосом!",
+      user: "MagistrTheOne",
+      timestamp: new Date(Date.now() - 15 * 60 * 1000),
+      project: "DeadLine"
+    }
+  ];
+};
 
 export function ActivityFeed() {
-  const [activities, setActivities] = useState<ActivityItem[]>(mockActivities);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [filter, setFilter] = useState<"all" | "today" | "week">("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadActivities = async () => {
+      setLoading(true);
+      try {
+        const realActivities = await getRealActivities();
+        setActivities(realActivities);
+      } catch (error) {
+        console.error('Ошибка загрузки активности:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadActivities();
+  }, []);
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -214,8 +216,18 @@ export function ActivityFeed() {
             <p className="text-sm">Начните работать, чтобы увидеть активность здесь</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredActivities.map((activity) => (
+        <div className="space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            </div>
+          ) : filteredActivities.length === 0 ? (
+            <div className="text-center py-8 text-white/60">
+              <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Нет активности</p>
+            </div>
+          ) : (
+            filteredActivities.map((activity) => (
               <div
                 key={activity.id}
                 className="flex items-start space-x-3 p-3 rounded-lg bg-black/30 border border-white/10 hover:border-white/20 transition-all duration-200"
@@ -260,11 +272,12 @@ export function ActivityFeed() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            ))
+          )}
+        </div>
         )}
         
-        {filteredActivities.length > 0 && (
+        {!loading && filteredActivities.length > 0 && (
           <div className="mt-4 pt-4 border-t border-white/10">
             <Button
               variant="ghost"

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { issue, project } from "@/lib/db/schema";
-import { OpenAIService } from "@/lib/ai/openai-service";
+import { AIService } from "@/lib/ai/ai-service";
 import { eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
@@ -70,12 +70,29 @@ export async function POST(request: NextRequest) {
           createdAt: task.createdAt,
         }));
 
-        const aiEstimation = await OpenAIService.estimateTaskPriority(
-          title,
-          description || "",
-          `Проект: ${projectInfo[0].name}. ${projectInfo[0].description || ""}`,
-          taskContext
-        );
+        const aiResponse = await AIService.chat([
+          {
+            role: "system",
+            content: `Ты - AI-ассистент Василий, эксперт по оценке приоритетов и времени выполнения задач.
+            Оцени задачу и верни ответ в формате JSON:
+            {
+              "priority": "LOWEST|LOW|MEDIUM|HIGH|HIGHEST",
+              "estimatedHours": число_часов,
+              "reasoning": "объяснение оценки"
+            }`
+          },
+          {
+            role: "user",
+            content: `Оцени задачу:
+            Название: ${title}
+            Описание: ${description || "Нет описания"}
+            Проект: ${projectInfo[0].name} - ${projectInfo[0].description || "Нет описания"}
+            
+            Контекст существующих задач: ${JSON.stringify(taskContext, null, 2)}`
+          }
+        ]);
+
+        const aiEstimation = JSON.parse(aiResponse);
 
         priority = aiEstimation.priority;
         estimatedHours = aiEstimation.estimatedHours;

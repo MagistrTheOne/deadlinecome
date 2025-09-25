@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { issue, project } from "@/lib/db/schema";
-import { OpenAIService } from "@/lib/ai/openai-service";
+import { AIService } from "@/lib/ai/ai-service";
 import { eq, gte } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
@@ -78,13 +78,14 @@ export async function POST(request: NextRequest) {
     }));
 
     // Генерируем отчёт через ИИ
-    const report = await OpenAIService.generateProjectReport(
-      projectInfo[0].name,
-      taskContext,
-      timeRange === "week" ? "последнюю неделю" : 
-      timeRange === "month" ? "последний месяц" : 
-      timeRange === "quarter" ? "последний квартал" : "последний месяц"
-    );
+    const report = await AIService.generateProjectReport({
+      projectName: projectInfo[0].name,
+      projectDescription: projectInfo[0].description,
+      tasks: taskContext,
+      timeRange: timeRange === "week" ? "последнюю неделю" : 
+                timeRange === "month" ? "последний месяц" : 
+                timeRange === "quarter" ? "последний квартал" : "последний месяц"
+    });
 
     // Дополнительная статистика
     const stats = {
