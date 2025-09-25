@@ -1,54 +1,77 @@
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { project } from "@/lib/db/schema";
 import { Project } from "@/lib/types";
 import { generateId } from "@/lib/utils";
-import { seedProjects } from "../seed";
-
-// In-memory storage
-let projects: Project[] = [...seedProjects];
 
 export interface IProjectsRepo {
   findById(id: string): Promise<Project | null>;
   findByWorkspace(workspaceId: string): Promise<Project[]>;
-  create(project: Omit<Project, "id">): Promise<Project>;
-  update(id: string, updates: Partial<Project>): Promise<Project | null>;
+  create(project: Omit<Project, "id" | "createdAt" | "updatedAt">): Promise<Project>;
+  update(id: string, updates: Partial<Omit<Project, "id" | "createdAt" | "updatedAt">>): Promise<Project | null>;
   delete(id: string): Promise<boolean>;
 }
 
-export class InMemoryProjectsRepo implements IProjectsRepo {
+export class DrizzleProjectsRepo implements IProjectsRepo {
   async findById(id: string): Promise<Project | null> {
-    return projects.find((project) => project.id === id) || null;
+    const result = await db.select().from(project).where(eq(project.id, id)).limit(1);
+    if (!result[0]) return null;
+
+    const item = result[0];
+    return {
+      ...item,
+      description: item.description ?? undefined,
+      leadId: item.leadId ?? undefined,
+    };
   }
 
   async findByWorkspace(workspaceId: string): Promise<Project[]> {
-    return projects.filter((project) => project.workspaceId === workspaceId);
+    const result = await db.select().from(project).where(eq(project.workspaceId, workspaceId));
+    return result.map(item => ({
+      ...item,
+      description: item.description ?? undefined,
+      leadId: item.leadId ?? undefined,
+    }));
   }
 
-  async create(projectData: Omit<Project, "id">): Promise<Project> {
-    const newProject: Project = {
-      ...projectData,
-      id: generateId(),
+  async create(projectData: Omit<Project, "id" | "createdAt" | "updatedAt">): Promise<Project> {
+    const id = generateId();
+    const newProject = {
+      id,
+      key: projectData.key,
+      name: projectData.name,
+      description: projectData.description ?? null,
+      workspaceId: projectData.workspaceId,
+      leadId: projectData.leadId ?? null,
     };
 
-    projects.push(newProject);
-    return newProject;
+    await db.insert(project).values(newProject);
+    return {
+      ...newProject,
+      description: newProject.description ?? undefined,
+      leadId: newProject.leadId ?? undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as Project;
   }
 
-  async update(id: string, updates: Partial<Project>): Promise<Project | null> {
-    const projectIndex = projects.findIndex((project) => project.id === id);
-    if (projectIndex === -1) return null;
+  async update(id: string, updates: Partial<Omit<Project, "id" | "createdAt" | "updatedAt">>): Promise<Project | null> {
+    const updateData: any = { ...updates };
+    if (updates.description !== undefined) {
+      updateData.description = updates.description ?? null;
+    }
+    if (updates.leadId !== undefined) {
+      updateData.leadId = updates.leadId ?? null;
+    }
 
-    projects[projectIndex] = {
-      ...projects[projectIndex],
-      ...updates,
-    };
-
-    return projects[projectIndex];
+    await db.update(project).set(updateData).where(eq(project.id, id));
+    return await this.findById(id);
   }
 
   async delete(id: string): Promise<boolean> {
-    const initialLength = projects.length;
-    projects = projects.filter((project) => project.id !== id);
-    return projects.length < initialLength;
+    const result = await db.delete(project).where(eq(project.id, id));
+    return (result as any).rowCount > 0;
   }
 }
 
-export const projectsRepo = new InMemoryProjectsRepo();
+export const projectsRepo = new DrizzleProjectsRepo();

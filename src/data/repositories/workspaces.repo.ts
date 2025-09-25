@@ -1,59 +1,58 @@
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { workspace } from "@/lib/db/schema";
 import { Workspace } from "@/lib/types";
 import { generateId } from "@/lib/utils";
-import { seedWorkspaces } from "../seed";
-
-// In-memory storage
-let workspaces: Workspace[] = [...seedWorkspaces];
 
 export interface IWorkspacesRepo {
   findById(id: string): Promise<Workspace | null>;
   findBySlug(slug: string): Promise<Workspace | null>;
+  findByOwnerId(ownerId: string): Promise<Workspace[]>;
   findAll(): Promise<Workspace[]>;
-  create(workspace: Omit<Workspace, "id">): Promise<Workspace>;
-  update(id: string, updates: Partial<Workspace>): Promise<Workspace | null>;
+  create(workspace: Omit<Workspace, "id" | "createdAt" | "updatedAt">): Promise<Workspace>;
+  update(id: string, updates: Partial<Omit<Workspace, "id" | "createdAt" | "updatedAt">>): Promise<Workspace | null>;
   delete(id: string): Promise<boolean>;
 }
 
-export class InMemoryWorkspacesRepo implements IWorkspacesRepo {
+export class DrizzleWorkspacesRepo implements IWorkspacesRepo {
   async findById(id: string): Promise<Workspace | null> {
-    return workspaces.find((workspace) => workspace.id === id) || null;
+    const result = await db.select().from(workspace).where(eq(workspace.id, id)).limit(1);
+    return result[0] || null;
   }
 
   async findBySlug(slug: string): Promise<Workspace | null> {
-    return workspaces.find((workspace) => workspace.slug === slug) || null;
+    const result = await db.select().from(workspace).where(eq(workspace.slug, slug)).limit(1);
+    return result[0] || null;
+  }
+
+  async findByOwnerId(ownerId: string): Promise<Workspace[]> {
+    return await db.select().from(workspace).where(eq(workspace.ownerId, ownerId));
   }
 
   async findAll(): Promise<Workspace[]> {
-    return [...workspaces];
+    return await db.select().from(workspace);
   }
 
-  async create(workspaceData: Omit<Workspace, "id">): Promise<Workspace> {
-    const newWorkspace: Workspace = {
+  async create(workspaceData: Omit<Workspace, "id" | "createdAt" | "updatedAt">): Promise<Workspace> {
+    const id = generateId();
+    const newWorkspace = {
+      id,
       ...workspaceData,
-      id: generateId(),
     };
 
-    workspaces.push(newWorkspace);
+    await db.insert(workspace).values(newWorkspace);
     return newWorkspace;
   }
 
-  async update(id: string, updates: Partial<Workspace>): Promise<Workspace | null> {
-    const workspaceIndex = workspaces.findIndex((workspace) => workspace.id === id);
-    if (workspaceIndex === -1) return null;
-
-    workspaces[workspaceIndex] = {
-      ...workspaces[workspaceIndex],
-      ...updates,
-    };
-
-    return workspaces[workspaceIndex];
+  async update(id: string, updates: Partial<Omit<Workspace, "id" | "createdAt" | "updatedAt">>): Promise<Workspace | null> {
+    await db.update(workspace).set(updates).where(eq(workspace.id, id));
+    return await this.findById(id);
   }
 
   async delete(id: string): Promise<boolean> {
-    const initialLength = workspaces.length;
-    workspaces = workspaces.filter((workspace) => workspace.id !== id);
-    return workspaces.length < initialLength;
+    const result = await db.delete(workspace).where(eq(workspace.id, id));
+    return result.rowCount > 0;
   }
 }
 
-export const workspacesRepo = new InMemoryWorkspacesRepo();
+export const workspacesRepo = new DrizzleWorkspacesRepo();

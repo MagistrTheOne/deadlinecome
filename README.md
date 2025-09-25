@@ -1,213 +1,166 @@
-# DeadLine - Jira-like SaaS
+# DeadLine - Project Management Tool
 
-Modern project management tool built with Next.js 15.5, TypeScript, and Tailwind CSS. Inspired by Jira with drag-and-drop Kanban boards, issue tracking, and team collaboration features.
+Полнофункциональное веб-приложение для управления проектами, вдохновленное Jira. Построено на Next.js 15 с Better Auth и Neon PostgreSQL.
 
-## Features
+## 🚀 Технологический стек
 
-- **Kanban Board**: Drag and drop issues between columns (TODO, IN_PROGRESS, IN_REVIEW, DONE)
-- **Issue Management**: Create, edit, and track issues with priorities, types, and labels
-- **Project Organization**: Manage multiple projects within workspaces
-- **Team Collaboration**: Invite team members and manage permissions
-- **Dark Theme**: Built with dark theme by default (no light theme toggle)
-- **Responsive Design**: Works on desktop and mobile devices
-- **TypeScript**: Full type safety throughout the application
+- **Frontend**: Next.js 15 (App Router)
+- **База данных**: Neon PostgreSQL
+- **Аутентификация**: Better Auth
+- **ORM**: Drizzle ORM
+- **UI**: Tailwind CSS + shadcn/ui
+- **TypeScript**: Строгая типизация
 
-## Tech Stack
+## 📋 Возможности
 
-- **Framework**: Next.js 15.5 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS with shadcn/ui components
-- **UI Components**: Radix UI primitives
-- **Drag & Drop**: @dnd-kit
-- **State Management**: TanStack Query + Zustand
-- **Validation**: Zod
-- **Icons**: Lucide React
-- **Testing**: Vitest + Testing Library
+- ✅ Полная аутентификация (Email/Password + Google OAuth)
+- ✅ Защищенные и публичные роуты
+- ✅ Управление пользователями
+- ✅ Рабочие пространства и проекты
+- ✅ Современный UI с glass-morphism дизайном
+- ✅ Адаптивный дизайн
+- ✅ TypeScript везде
 
-## Getting Started
+## 🛠️ Установка и запуск
 
-### Prerequisites
+### 1. Клонирование и установка зависимостей
 
-- Node.js 20 LTS
-- npm or pnpm
-
-### Installation
-
-1. Clone the repository:
 ```bash
 git clone <repository-url>
 cd deadline
-```
-
-2. Install dependencies:
-```bash
 npm install
 ```
 
-3. Set up environment variables (optional):
-```bash
-cp .env.example .env.local
+### 2. Настройка переменных окружения
+
+Скопируйте `.env.local` и настройте переменные:
+
+```env
+# Database
+DATABASE_URL=postgresql://username:password@localhost:5432/deadline
+
+# Better Auth
+BETTER_AUTH_SECRET=your-secret-key-here-change-in-production
+BETTER_AUTH_URL=http://localhost:3000
+
+# Social Providers (optional)
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Next.js
+NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-4. Run the development server:
+### 3. Настройка базы данных
+
+```bash
+# Генерация миграций
+npm run db:generate
+
+# Применение миграций и создание тестовых данных
+npm run db:setup
+```
+
+### 4. Запуск приложения
+
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Приложение будет доступно по адресу: http://localhost:3000
 
-## Available Scripts
+## 🔐 Тестовые данные
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run test` - Run tests
+После выполнения `npm run db:setup` будет создан тестовый пользователь:
 
-## Project Structure
+- **Email**: test@example.com
+- **Пароль**: password123
+
+## 📁 Структура проекта
 
 ```
 src/
-├── app/                    # Next.js App Router pages
-│   ├── (auth)/            # Authentication pages
-│   ├── (dashboard)/       # Dashboard pages
-│   ├── (marketing)/       # Landing page
-│   └── layout.tsx         # Root layout
-├── components/            # Reusable UI components
-│   ├── layout/           # Layout components (sidebar, topbar)
-│   ├── ui/               # shadcn/ui components
-│   └── common/           # Common components
-├── features/             # Feature-specific components
-│   ├── issues/           # Issue management
-│   ├── board/            # Kanban board
-│   └── [feature]/        # Other features
-├── lib/                  # Utilities and configurations
-├── data/                 # In-memory data layer (MVP)
-└── styles/               # Global styles
+├── app/
+│   ├── (auth)/          # Страницы аутентификации
+│   ├── dashboard/       # Панель управления
+│   ├── profile/         # Профиль пользователя
+│   ├── api/            # API routes
+│   └── layout.tsx      # Корневой layout
+├── components/
+│   ├── auth/           # Компоненты аутентификации
+│   ├── ui/             # UI компоненты (shadcn/ui)
+│   └── common/         # Общие компоненты
+├── lib/
+│   ├── auth.ts         # Конфигурация Better Auth
+│   ├── auth-client.ts  # Клиент Better Auth
+│   ├── auth-provider.tsx # Провайдер аутентификации
+│   ├── db/             # База данных и схема
+│   └── utils.ts        # Утилиты
+└── data/
+    └── repositories/   # Репозитории для работы с БД
 ```
 
-## Features Overview
+## 🔧 Доступные скрипты
 
-### Authentication
-- Mock authentication system (demo mode)
-- Sign in and sign up forms
-- Session management with localStorage
+- `npm run dev` - Запуск в режиме разработки
+- `npm run build` - Сборка для продакшена
+- `npm run start` - Запуск продакшен сборки
+- `npm run lint` - Проверка кода линтером
+- `npm run test` - Запуск тестов
+- `npm run db:generate` - Генерация миграций БД
+- `npm run db:setup` - Настройка БД с тестовыми данными
 
-### Dashboard
-- Project overview with statistics
-- Recent activity feed
-- Quick actions and navigation
+## 🌐 API Endpoints
 
-### Projects
-- Project listing and management
-- Project settings and team management
-- Multiple projects per workspace
+### Аутентификация
+- `POST /api/auth/sign-in` - Вход в систему
+- `POST /api/auth/sign-up` - Регистрация
+- `POST /api/auth/sign-out` - Выход из системы
 
-### Kanban Board
-- Drag and drop between columns
-- Issue cards with priority, type, and assignee
-- Real-time updates with optimistic UI
-- Create new issues directly from board
+### Пользователи
+- `GET /api/users` - Получение списка пользователей
+- `PUT /api/users` - Обновление профиля пользователя
 
-### Issues
-- Create, edit, and delete issues
-- Priority levels (Low, Medium, High, Critical)
-- Issue types (Task, Bug, Story)
-- Labels and story points
-- Assignee management
+## 🛡️ Безопасность
 
-### Team Management
-- Invite and manage team members
-- Role-based permissions (Owner, Admin, Member, Viewer)
-- Workspace-level member management
+- Все API routes защищены аутентификацией
+- Middleware проверяет сессии для защищенных роутов
+- Валидация данных с помощью Zod
+- Безопасное хранение паролей с Better Auth
 
-## Data Layer (MVP)
+## 🎨 UI/UX
 
-The application currently uses an in-memory data layer with seed data:
+- Современный дизайн с glass-morphism эффектами
+- Адаптивная верстка для всех устройств
+- Темная тема по умолчанию
+- Плавные анимации и переходы
+- Интуитивно понятный интерфейс
 
-- **Workspaces**: Demo workspace with sample data
-- **Projects**: 3 sample projects (Website Redesign, API Development, Mobile App)
-- **Issues**: 10 sample issues across different projects and statuses
-- **Members**: 4 sample team members
+## 📱 Поддерживаемые браузеры
 
-### Seed Data
-- 2 workspaces (Demo, Personal)
-- 3 projects with realistic data
-- 10+ issues with various statuses and properties
-- Team members with different roles
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
 
-## Future Backend Integration
+## 🤝 Вклад в проект
 
-The data layer is designed to be easily replaceable with a real backend:
+1. Форкните репозиторий
+2. Создайте ветку для новой функции
+3. Внесите изменения
+4. Создайте Pull Request
 
-1. Replace in-memory repositories with database implementations
-2. Add authentication with NextAuth.js
-3. Implement real-time updates with WebSockets
-4. Add file uploads and attachments
-5. Implement advanced reporting and analytics
+## 📄 Лицензия
 
-## Database Schema (Planned)
+MIT License
 
-```sql
--- Workspaces
-CREATE TABLE workspaces (
-  id VARCHAR PRIMARY KEY,
-  name VARCHAR NOT NULL,
-  slug VARCHAR UNIQUE NOT NULL
-);
+## 🆘 Поддержка
 
--- Users and Members
-CREATE TABLE members (
-  id VARCHAR PRIMARY KEY,
-  user_id VARCHAR NOT NULL,
-  workspace_id VARCHAR REFERENCES workspaces(id),
-  role VARCHAR CHECK (role IN ('OWNER', 'ADMIN', 'MEMBER', 'VIEWER'))
-);
+Если у вас возникли вопросы или проблемы, создайте Issue в репозитории.
 
--- Projects
-CREATE TABLE projects (
-  id VARCHAR PRIMARY KEY,
-  key VARCHAR NOT NULL,
-  name VARCHAR NOT NULL,
-  workspace_id VARCHAR REFERENCES workspaces(id),
-  lead_id VARCHAR REFERENCES members(id)
-);
+---
 
--- Issues
-CREATE TABLE issues (
-  id VARCHAR PRIMARY KEY,
-  project_id VARCHAR REFERENCES projects(id),
-  key VARCHAR NOT NULL,
-  title VARCHAR NOT NULL,
-  description TEXT,
-  type VARCHAR CHECK (type IN ('TASK', 'BUG', 'STORY')),
-  status VARCHAR CHECK (status IN ('TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE')),
-  priority VARCHAR CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
-  assignee_id VARCHAR REFERENCES members(id),
-  reporter_id VARCHAR REFERENCES members(id),
-  labels TEXT[],
-  story_points INTEGER,
-  order_index INTEGER,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-);
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Run the test suite
-6. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Author
-
-**MagistrTheOne**
-
-Built with ❤️ using Next.js and modern web technologies.
+**Создано с ❤️ для эффективного управления проектами**

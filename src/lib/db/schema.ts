@@ -58,3 +58,74 @@ export const verification = pgTable("verification", {
     .$onUpdate(() => new Date())
     .notNull(),
 });
+
+// Application-specific tables
+export const workspace = pgTable("workspace", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  ownerId: text("owner_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const workspaceMember = pgTable("workspace_member", {
+  id: text("id").primaryKey(),
+  workspaceId: text("workspace_id")
+    .notNull()
+    .references(() => workspace.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  role: text("role").notNull().$type<"OWNER" | "ADMIN" | "MEMBER" | "VIEWER">(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => new Date())
+    .notNull(),
+}, (t) => ({
+  uniqueWorkspaceUser: [t.workspaceId, t.userId],
+}));
+
+export const project = pgTable("project", {
+  id: text("id").primaryKey(),
+  key: text("key").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  workspaceId: text("workspace_id")
+    .notNull()
+    .references(() => workspace.id, { onDelete: "cascade" }),
+  leadId: text("lead_id")
+    .references(() => user.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const issue = pgTable("issue", {
+  id: text("id").primaryKey(),
+  key: text("key").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().$type<"BACKLOG" | "TODO" | "IN_PROGRESS" | "DONE">(),
+  priority: text("priority").notNull().$type<"LOWEST" | "LOW" | "MEDIUM" | "HIGH" | "HIGHEST">(),
+  type: text("type").notNull().$type<"BUG" | "TASK" | "STORY" | "EPIC">(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
+  assigneeId: text("assignee_id")
+    .references(() => user.id, { onDelete: "set null" }),
+  reporterId: text("reporter_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  order: timestamp("order").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => new Date())
+    .notNull(),
+});

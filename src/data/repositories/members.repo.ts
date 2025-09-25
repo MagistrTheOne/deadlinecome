@@ -1,59 +1,75 @@
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { workspaceMember } from "@/lib/db/schema";
 import { Member } from "@/lib/types";
 import { generateId } from "@/lib/utils";
-import { seedMembers } from "../seed";
-
-// In-memory storage
-let members: Member[] = [...seedMembers];
 
 export interface IMembersRepo {
   findById(id: string): Promise<Member | null>;
   findByWorkspace(workspaceId: string): Promise<Member[]>;
   findByUser(userId: string): Promise<Member[]>;
-  create(member: Omit<Member, "id">): Promise<Member>;
-  update(id: string, updates: Partial<Member>): Promise<Member | null>;
+  create(member: Omit<Member, "id" | "createdAt" | "updatedAt">): Promise<Member>;
+  update(id: string, updates: Partial<Omit<Member, "id" | "createdAt" | "updatedAt">>): Promise<Member | null>;
   delete(id: string): Promise<boolean>;
 }
 
-export class InMemoryMembersRepo implements IMembersRepo {
+export class DrizzleMembersRepo implements IMembersRepo {
   async findById(id: string): Promise<Member | null> {
-    return members.find((member) => member.id === id) || null;
+    const result = await db.select().from(workspaceMember).where(eq(workspaceMember.id, id)).limit(1);
+    if (!result[0]) return null;
+
+    const item = result[0];
+    return {
+      ...item,
+      createdAt: item.createdAt ?? new Date(),
+      updatedAt: item.updatedAt ?? new Date(),
+    } as Member;
   }
 
   async findByWorkspace(workspaceId: string): Promise<Member[]> {
-    return members.filter((member) => member.workspaceId === workspaceId);
+    const result = await db.select().from(workspaceMember).where(eq(workspaceMember.workspaceId, workspaceId));
+    return result.map(item => ({
+      ...item,
+      createdAt: item.createdAt ?? new Date(),
+      updatedAt: item.updatedAt ?? new Date(),
+    } as Member));
   }
 
   async findByUser(userId: string): Promise<Member[]> {
-    return members.filter((member) => member.userId === userId);
+    const result = await db.select().from(workspaceMember).where(eq(workspaceMember.userId, userId));
+    return result.map(item => ({
+      ...item,
+      createdAt: item.createdAt ?? new Date(),
+      updatedAt: item.updatedAt ?? new Date(),
+    } as Member));
   }
 
-  async create(memberData: Omit<Member, "id">): Promise<Member> {
-    const newMember: Member = {
-      ...memberData,
-      id: generateId(),
+  async create(memberData: Omit<Member, "id" | "createdAt" | "updatedAt">): Promise<Member> {
+    const id = generateId();
+    const newMember = {
+      id,
+      workspaceId: memberData.workspaceId,
+      userId: memberData.userId,
+      role: memberData.role,
     };
 
-    members.push(newMember);
-    return newMember;
+    await db.insert(workspaceMember).values(newMember);
+    return {
+      ...newMember,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as Member;
   }
 
-  async update(id: string, updates: Partial<Member>): Promise<Member | null> {
-    const memberIndex = members.findIndex((member) => member.id === id);
-    if (memberIndex === -1) return null;
-
-    members[memberIndex] = {
-      ...members[memberIndex],
-      ...updates,
-    };
-
-    return members[memberIndex];
+  async update(id: string, updates: Partial<Omit<Member, "id" | "createdAt" | "updatedAt">>): Promise<Member | null> {
+    await db.update(workspaceMember).set(updates).where(eq(workspaceMember.id, id));
+    return await this.findById(id);
   }
 
   async delete(id: string): Promise<boolean> {
-    const initialLength = members.length;
-    members = members.filter((member) => member.id !== id);
-    return members.length < initialLength;
+    const result = await db.delete(workspaceMember).where(eq(workspaceMember.id, id));
+    return (result as any).rowCount > 0;
   }
 }
 
-export const membersRepo = new InMemoryMembersRepo();
+export const membersRepo = new DrizzleMembersRepo();
