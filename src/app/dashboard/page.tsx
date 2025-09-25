@@ -29,6 +29,7 @@ import { RealTimeTodo } from "@/components/ui/real-time-todo";
 import { WebSocketStats } from "@/components/ui/websocket-stats";
 import AITeamDashboard from "@/components/ui/ai-team-dashboard";
 import BugTracker from "@/components/ui/bug-tracker";
+import AICodeReviewDashboard from "@/components/ui/ai-code-review-dashboard";
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -274,6 +275,11 @@ export default function DashboardPage() {
       {/* Bug Tracker */}
       <div className="mt-8">
         <BugTracker />
+      </div>
+
+      {/* AI Code Review Dashboard */}
+      <div className="mt-8">
+        <AICodeReviewDashboard />
       </div>
 
     </DashboardLayout>

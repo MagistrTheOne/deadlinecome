@@ -25,6 +25,19 @@ interface WebSocketMessage {
   bugId?: string;
   aiMember?: any;
   message?: string;
+  review?: any;
+  gate?: any;
+  scan?: any;
+  analysis?: any;
+  plan?: any;
+  doc?: any;
+  analytics?: any;
+  pipeline?: any;
+  meeting?: any;
+  alert?: any;
+  tests?: any;
+  optimization?: any;
+  blocked?: boolean;
 }
 
 class WebSocketManager {
@@ -295,6 +308,127 @@ class WebSocketManager {
       aiMember,
       message,
       workspaceId,
+    });
+  }
+
+  public notifyCodeReview(projectId: string, review: any, blocked: boolean = false) {
+    this.broadcastToProject(projectId, {
+      type: 'code_review_created',
+      review,
+      projectId,
+      blocked,
+    });
+  }
+
+  public notifyCodeReviewUpdate(projectId: string, review: any) {
+    this.broadcastToProject(projectId, {
+      type: 'code_review_updated',
+      review,
+      projectId,
+    });
+  }
+
+  public notifyQualityGateCreated(projectId: string, gate: any) {
+    this.broadcastToProject(projectId, {
+      type: 'quality_gate_created',
+      gate,
+      projectId,
+    });
+  }
+
+  public notifyQualityGateUpdate(projectId: string, gate: any) {
+    this.broadcastToProject(projectId, {
+      type: 'quality_gate_updated',
+      gate,
+      projectId,
+    });
+  }
+
+  public notifyQualityGateDeleted(projectId: string, gate: any) {
+    this.broadcastToProject(projectId, {
+      type: 'quality_gate_deleted',
+      gate,
+      projectId,
+    });
+  }
+
+  public notifySecurityScan(projectId: string, scan: any) {
+    this.broadcastToProject(projectId, {
+      type: 'security_scan_completed',
+      scan,
+      projectId,
+    });
+  }
+
+  public notifyPerformanceAnalysis(projectId: string, analysis: any) {
+    this.broadcastToProject(projectId, {
+      type: 'performance_analysis_completed',
+      analysis,
+      projectId,
+    });
+  }
+
+  public notifySprintPlanning(projectId: string, plan: any) {
+    this.broadcastToProject(projectId, {
+      type: 'sprint_planning_completed',
+      plan,
+      projectId,
+    });
+  }
+
+  public notifyDocumentationGenerated(projectId: string, doc: any) {
+    this.broadcastToProject(projectId, {
+      type: 'documentation_generated',
+      doc,
+      projectId,
+    });
+  }
+
+  public notifyAnalyticsUpdate(projectId: string, analytics: any) {
+    this.broadcastToProject(projectId, {
+      type: 'analytics_updated',
+      analytics,
+      projectId,
+    });
+  }
+
+  public notifyCICDUpdate(projectId: string, pipeline: any) {
+    this.broadcastToProject(projectId, {
+      type: 'cicd_updated',
+      pipeline,
+      projectId,
+    });
+  }
+
+  public notifyMeetingScheduled(workspaceId: string, meeting: any) {
+    this.broadcastToWorkspace(workspaceId, {
+      type: 'meeting_scheduled',
+      meeting,
+      workspaceId,
+    });
+  }
+
+  public notifyBurnoutAlert(workspaceId: string, alert: any) {
+    this.broadcastToWorkspace(workspaceId, {
+      type: 'burnout_alert',
+      alert,
+      workspaceId,
+    });
+  }
+
+  public notifyTestGenerated(projectId: string, tests: any) {
+    this.broadcastToProject(projectId, {
+      type: 'tests_generated',
+      tests,
+      projectId,
+    });
+  }
+
+  public notifyCostOptimization(projectId: string, optimization: any) {
+    this.broadcastToProject(projectId, {
+      type: 'cost_optimization',
+      optimization,
+      projectId,
     });
   }
 
