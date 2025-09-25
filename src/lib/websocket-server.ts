@@ -21,6 +21,10 @@ interface WebSocketMessage {
   status?: any;
   action?: any;
   member?: any;
+  bug?: any;
+  bugId?: string;
+  aiMember?: any;
+  message?: string;
 }
 
 class WebSocketManager {
@@ -265,6 +269,31 @@ class WebSocketManager {
     this.broadcastToWorkspace(workspaceId, {
       type: 'role_updated',
       member,
+      workspaceId,
+    });
+  }
+
+  public notifyBugCreated(projectId: string, bug: any) {
+    this.broadcastToProject(projectId, {
+      type: 'bug_created',
+      bug,
+      projectId,
+    });
+  }
+
+  public notifyBugUpdate(projectId: string, bug: any) {
+    this.broadcastToProject(projectId, {
+      type: 'bug_updated',
+      bug,
+      projectId,
+    });
+  }
+
+  public notifyAITeamMessage(workspaceId: string, aiMember: any, message: string) {
+    this.broadcastToWorkspace(workspaceId, {
+      type: 'ai_team_message',
+      aiMember,
+      message,
       workspaceId,
     });
   }

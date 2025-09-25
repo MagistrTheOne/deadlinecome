@@ -27,6 +27,8 @@ import { RoleManagement } from "@/components/ui/role-management";
 import { VasilyProjectManager } from "@/components/ui/vasily-project-manager";
 import { RealTimeTodo } from "@/components/ui/real-time-todo";
 import { WebSocketStats } from "@/components/ui/websocket-stats";
+import AITeamDashboard from "@/components/ui/ai-team-dashboard";
+import BugTracker from "@/components/ui/bug-tracker";
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -263,6 +265,17 @@ export default function DashboardPage() {
       <div className="mt-8">
         <PsychologicalSupportPanel />
       </div>
+
+      {/* AI Development Team */}
+      <div className="mt-8">
+        <AITeamDashboard />
+      </div>
+
+      {/* Bug Tracker */}
+      <div className="mt-8">
+        <BugTracker />
+      </div>
+
     </DashboardLayout>
   );
 }

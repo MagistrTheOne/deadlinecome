@@ -202,3 +202,71 @@ export const vasilyAction = pgTable("vasily_action", {
   executed: boolean("executed").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// AI Team Members
+export const aiTeamMember = pgTable("ai_team_member", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(), // Василий, Анна, Дмитрий, etc.
+  role: text("role").notNull().$type<"AI_CTO" | "AI_HR" | "AI_PM" | "AI_QA" | "AI_DEVOPS" | "AI_DESIGNER" | "AI_ANALYST">(),
+  specialization: text("specialization").notNull(),
+  personality: text("personality"), // JSON with AI personality traits
+  skills: text("skills"), // JSON array of AI skills
+  isActive: boolean("is_active").default(true),
+  lastActive: timestamp("last_active").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+// Bug Reports
+export const bugReport = pgTable("bug_report", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  stepsToReproduce: text("steps_to_reproduce"),
+  expectedBehavior: text("expected_behavior"),
+  actualBehavior: text("actual_behavior"),
+  status: text("status").notNull().$type<"NEW" | "ASSIGNED" | "IN_PROGRESS" | "TESTING" | "RESOLVED" | "CLOSED">().default("NEW"),
+  priority: text("priority").notNull().$type<"CRITICAL" | "HIGH" | "MEDIUM" | "LOW">().default("MEDIUM"),
+  category: text("category").notNull().$type<"FRONTEND" | "BACKEND" | "DATABASE" | "API" | "UI_UX" | "PERFORMANCE" | "SECURITY">(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
+  reporterId: text("reporter_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  assigneeId: text("assignee_id")
+    .references(() => user.id, { onDelete: "set null" }),
+  aiQaId: text("ai_qa_id")
+    .references(() => aiTeamMember.id, { onDelete: "set null" }),
+  screenshots: text("screenshots"), // JSON array of screenshot URLs
+  environment: text("environment"), // Browser, OS, etc.
+  severity: text("severity").$type<"BLOCKER" | "CRITICAL" | "MAJOR" | "MINOR" | "TRIVIAL">(),
+  estimatedFixTime: integer("estimated_fix_time"), // hours
+  actualFixTime: integer("actual_fix_time"), // hours
+  aiAnalysis: text("ai_analysis"), // JSON with AI QA analysis
+  aiRecommendations: text("ai_recommendations"), // JSON array of AI recommendations
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+// AI QA Analysis
+export const aiQaAnalysis = pgTable("ai_qa_analysis", {
+  id: text("id").primaryKey(),
+  bugReportId: text("bug_report_id")
+    .notNull()
+    .references(() => bugReport.id, { onDelete: "cascade" }),
+  aiQaId: text("ai_qa_id")
+    .notNull()
+    .references(() => aiTeamMember.id, { onDelete: "cascade" }),
+  analysisType: text("analysis_type").notNull().$type<"BUG_ANALYSIS" | "TEST_GENERATION" | "PREDICTION" | "QUALITY_CHECK">(),
+  analysis: text("analysis").notNull(), // Detailed analysis
+  confidence: integer("confidence").notNull(), // 0-100
+  recommendations: text("recommendations"), // JSON array of recommendations
+  testCases: text("test_cases"), // JSON array of generated test cases
+  predictedRisk: text("predicted_risk").$type<"LOW" | "MEDIUM" | "HIGH" | "CRITICAL">(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
