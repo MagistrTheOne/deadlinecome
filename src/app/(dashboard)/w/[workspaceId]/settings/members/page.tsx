@@ -3,10 +3,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { seedMembers } from "@/data/seed";
-import { UserPlus, Mail, Shield } from "lucide-react";
+import { UserPlus, Mail, Shield, Settings, Trash2 } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function MembersPage({ params }: { params: { workspaceId: string } }) {
   const members = seedMembers.filter(m => m.workspaceId === params.workspaceId);
+
+  // Mock current user - in real app this would come from auth context
+  const currentMember = members.find(m => m.userId === "demo-user") || members[0];
+  const { hasPermission } = usePermissions(currentMember);
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -32,10 +37,12 @@ export default function MembersPage({ params }: { params: { workspaceId: string 
             Manage workspace members and their permissions
           </p>
         </div>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Invite Member
-        </Button>
+        {hasPermission("manage_members") && (
+          <Button>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Invite Member
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -66,9 +73,16 @@ export default function MembersPage({ params }: { params: { workspaceId: string 
                   <Shield className="mr-1 h-3 w-3" />
                   {member.role}
                 </Badge>
-                <Button variant="ghost" size="sm">
-                  Manage
-                </Button>
+                {hasPermission("manage_members") && member.id !== currentMember?.id && (
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm">
+                      <Settings className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

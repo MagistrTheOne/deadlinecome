@@ -56,7 +56,67 @@ export type Issue = z.infer<typeof Issue>;
 export const Status = z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"]);
 export type Status = z.infer<typeof Status>;
 
-// Priority enum with colors for UI
+// Priority enum with enhanced styling for UI
+export const PriorityStyles: Record<Issue["priority"], {
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  icon: string;
+}> = {
+  LOW: {
+    color: "text-blue-700",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+    icon: "📋",
+  },
+  MEDIUM: {
+    color: "text-yellow-700",
+    bgColor: "bg-yellow-50",
+    borderColor: "border-yellow-200",
+    icon: "⚡",
+  },
+  HIGH: {
+    color: "text-orange-700",
+    bgColor: "bg-orange-50",
+    borderColor: "border-orange-200",
+    icon: "🔥",
+  },
+  CRITICAL: {
+    color: "text-red-700",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
+    icon: "🚨",
+  },
+} as const;
+
+// Issue type colors with enhanced styling
+export const TypeStyles: Record<Issue["type"], {
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  icon: string;
+}> = {
+  TASK: {
+    color: "text-gray-700",
+    bgColor: "bg-gray-50",
+    borderColor: "border-gray-200",
+    icon: "📝",
+  },
+  BUG: {
+    color: "text-red-700",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
+    icon: "🐛",
+  },
+  STORY: {
+    color: "text-green-700",
+    bgColor: "bg-green-50",
+    borderColor: "border-green-200",
+    icon: "📖",
+  },
+} as const;
+
+// Legacy compatibility
 export const PriorityColors: Record<Issue["priority"], string> = {
   LOW: "text-blue-500",
   MEDIUM: "text-yellow-500",
@@ -64,7 +124,6 @@ export const PriorityColors: Record<Issue["priority"], string> = {
   CRITICAL: "text-red-500",
 } as const;
 
-// Issue type colors
 export const TypeColors: Record<Issue["type"], string> = {
   TASK: "text-gray-500",
   BUG: "text-red-500",
@@ -78,3 +137,26 @@ export const StatusColors: Record<Status, string> = {
   IN_REVIEW: "bg-yellow-800",
   DONE: "bg-green-800",
 } as const;
+
+// Label colors for tags
+export const LabelColors = [
+  "bg-purple-100 text-purple-800 border-purple-200",
+  "bg-pink-100 text-pink-800 border-pink-200",
+  "bg-indigo-100 text-indigo-800 border-indigo-200",
+  "bg-teal-100 text-teal-800 border-teal-200",
+  "bg-cyan-100 text-cyan-800 border-cyan-200",
+  "bg-lime-100 text-lime-800 border-lime-200",
+  "bg-amber-100 text-amber-800 border-amber-200",
+  "bg-rose-100 text-rose-800 border-rose-200",
+  "bg-emerald-100 text-emerald-800 border-emerald-200",
+  "bg-violet-100 text-violet-800 border-violet-200",
+] as const;
+
+export function getLabelColor(label: string): string {
+  // Simple hash function to get consistent color for same labels
+  let hash = 0;
+  for (let i = 0; i < label.length; i++) {
+    hash = label.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return LabelColors[Math.abs(hash) % LabelColors.length];
+}

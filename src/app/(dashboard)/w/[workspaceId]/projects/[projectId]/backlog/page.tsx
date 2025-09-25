@@ -1,9 +1,15 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { IssueCard } from "@/features/issues/components/issue-card";
 import { CreateIssueDialog } from "@/features/issues/components/create-issue-dialog";
 import { getIssuesByProject } from "@/features/issues/actions";
+import { issuesApi } from "@/features/issues/api";
+import { toast } from "sonner";
+import { Issue } from "@/lib/types";
 import { Plus, ListTodo } from "lucide-react";
 
 interface BacklogPageProps {
@@ -13,14 +19,51 @@ interface BacklogPageProps {
   };
 }
 
-export default async function BacklogPage({ params }: BacklogPageProps) {
-  const issues = await getIssuesByProject(params.projectId);
+export default function BacklogPage({ params }: BacklogPageProps) {
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadIssues = async () => {
+      try {
+        const data = await getIssuesByProject(params.projectId);
+        setIssues(data);
+      } catch (error) {
+        toast.error("Failed to load issues");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadIssues();
+  }, [params.projectId]);
+
+  const handleCreateIssue = async (issueData: Omit<Issue, "id" | "key" | "createdAt" | "updatedAt" | "order">) => {
+    try {
+      const newIssue = await issuesApi.create(issueData);
+      setIssues(prev => [...prev, newIssue]);
+      toast.success("Issue created successfully");
+    } catch (error) {
+      toast.error("Failed to create issue");
+    }
+  };
 
   // Group issues by status
   const backlogIssues = issues.filter(issue => issue.status === "TODO");
   const inProgressIssues = issues.filter(issue => issue.status === "IN_PROGRESS");
   const reviewIssues = issues.filter(issue => issue.status === "IN_REVIEW");
   const doneIssues = issues.filter(issue => issue.status === "DONE");
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading backlog...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -33,7 +76,7 @@ export default async function BacklogPage({ params }: BacklogPageProps) {
         </div>
         <CreateIssueDialog
           projectId={params.projectId}
-          onCreate={() => window.location.reload()}
+          onCreate={handleCreateIssue}
           trigger={
             <Button>
               <Plus className="mr-2 h-4 w-4" />

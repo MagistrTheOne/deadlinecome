@@ -12,9 +12,20 @@ interface ColumnProps {
   items: Issue[];
   onCreateIssue: (issueData: Omit<Issue, "id" | "key" | "createdAt" | "updatedAt" | "order">) => void;
   onIssueClick: (issue: Issue) => void;
+  canCreateIssue?: boolean;
+  selectedIssueId?: string;
+  draggedIssueId?: string;
 }
 
-export function Column({ title, items, onCreateIssue, onIssueClick }: ColumnProps) {
+export function Column({
+  title,
+  items,
+  onCreateIssue,
+  onIssueClick,
+  canCreateIssue = true,
+  selectedIssueId,
+  draggedIssueId
+}: ColumnProps) {
   const { setNodeRef } = useDroppable({
     id: title,
   });
@@ -25,15 +36,17 @@ export function Column({ title, items, onCreateIssue, onIssueClick }: ColumnProp
         <h3 className="font-semibold text-sm uppercase tracking-wide">
           {title.replace("_", " ")} ({items.length})
         </h3>
-        <CreateIssueDialog
-          projectId="demo-project-1"
-          onCreate={onCreateIssue}
-          trigger={
-            <button className="text-muted-foreground hover:text-foreground text-sm">
-              + Add
-            </button>
-          }
-        />
+        {canCreateIssue && (
+          <CreateIssueDialog
+            projectId="demo-project-1"
+            onCreate={onCreateIssue}
+            trigger={
+              <button className="text-muted-foreground hover:text-foreground text-sm">
+                + Add
+              </button>
+            }
+          />
+        )}
       </div>
 
       <div
@@ -47,6 +60,8 @@ export function Column({ title, items, onCreateIssue, onIssueClick }: ColumnProp
               issue={issue}
               onClick={() => onIssueClick(issue)}
               className="bg-card"
+              isSelected={selectedIssueId === issue.id}
+              isDragging={draggedIssueId === issue.id}
             />
           ))}
         </SortableContext>

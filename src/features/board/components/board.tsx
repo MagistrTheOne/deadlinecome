@@ -13,19 +13,54 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Issue } from "@/lib/types";
-import { useDndBoard } from "../hooks/use-dnd-board";
+import { useOptimisticDnd } from "../hooks/use-optimistic-dnd";
+import { useKeyboardNavigation } from "../hooks/use-keyboard-navigation";
+import { useFilteredIssues } from "../../issues/hooks/use-filtered-issues";
+import { IssueFilters } from "../../issues/components/issue-filters";
 import { Column } from "./column";
 import { IssueCard } from "@/features/issues/components/issue-card";
 import { IssueDrawer } from "@/features/issues/components/issue-drawer";
 import { CreateIssueDialog } from "@/features/issues/components/create-issue-dialog";
 import { issuesApi } from "@/features/issues/api";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
+import { seedMembers } from "@/data/seed";
 
 export function Board({ issues }: { issues: Issue[] }) {
-  const { items, move, reorder, updateItems } = useDndBoard(issues);
+  const filteredIssues = useFilteredIssues(issues);
+  const { items, move, reorder, updateItems, isLoading, error } = useOptimisticDnd(filteredIssues);
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Mock current user permissions
+  const currentMember = seedMembers.find(m => m.userId === "demo-user") || seedMembers[0];
+  const { hasPermission } = usePermissions(currentMember);
+
+  // Keyboard navigation
+  const handleMoveIssue = async (issueId: string, direction: "left" | "right") => {
+    const issue = items.find(i => i.id === issueId);
+    if (!issue) return;
+
+    const columns: Issue["status"][] = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
+    const currentIndex = columns.indexOf(issue.status);
+    const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
+
+    if (newIndex >= 0 && newIndex < columns.length) {
+      const newStatus = columns[newIndex];
+      await move(issueId, newStatus, 0, async (updatedIssues) => {
+        await issuesApi.reorder(issue.projectId, updatedIssues);
+      });
+      toast.success(`Issue moved to ${newStatus.replace("_", " ")}`);
+    }
+  };
+
+  useKeyboardNavigation({
+    selectedIssue,
+    onSelectIssue: setSelectedIssue,
+    onMoveIssue: handleMoveIssue,
+    issues,
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -41,7 +76,7 @@ export function Board({ issues }: { issues: Issue[] }) {
     setActiveIssue(issue || null);
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
+  const handleDragOver = async (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over) return;
 
@@ -61,57 +96,38 @@ export function Board({ issues }: { issues: Issue[] }) {
       const overIndex = items.findIndex((item) => item.id === overId);
 
       if (activeIssue.status !== overIssue.status) {
-        // Move to different column
-        const newItems = arrayMove(items, activeIndex, overIndex);
-        const updatedItems = newItems.map((item, index) => ({
-          ...item,
-          status: index <= overIndex && index > activeIndex ? overIssue.status : item.status,
-          order: index,
-        }));
-        updateItems(updatedItems);
+        // Move to different column - optimistic update
+        await move(activeId as string, overIssue.status, overIndex, async (updatedIssues) => {
+          await issuesApi.reorder(activeIssue.projectId, updatedIssues);
+        });
       } else {
-        // Reorder within the same column
-        reorder(activeIssue.status, activeIndex, overIndex);
+        // Reorder within the same column - optimistic update
+        const columnItems = items.filter(item => item.status === activeIssue.status);
+        const activeColumnIndex = columnItems.findIndex(item => item.id === activeId);
+        const overColumnIndex = columnItems.findIndex(item => item.id === overId);
+
+        await reorder(activeIssue.status, activeColumnIndex, overColumnIndex, async (updatedIssues) => {
+          await issuesApi.reorder(activeIssue.projectId, updatedIssues);
+        });
       }
     } else {
       // Dropping over a column
       const overStatus = overId as Issue["status"];
       if (activeIssue.status !== overStatus) {
-        move(activeId as string, overStatus, 0);
+        await move(activeId as string, overStatus, 0, async (updatedIssues) => {
+          await issuesApi.reorder(activeIssue.projectId, updatedIssues);
+        });
       }
     }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over) {
-      setActiveIssue(null);
-      return;
-    }
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    if (activeId === overId) {
-      setActiveIssue(null);
-      return;
-    }
-
-    const activeIssue = items.find((item) => item.id === activeId);
-    if (!activeIssue) {
-      setActiveIssue(null);
-      return;
-    }
-
-    // Save changes to server
-    try {
-      issuesApi.reorder(activeIssue.projectId, items);
-      toast.success("Board updated successfully");
-    } catch (error) {
-      toast.error("Failed to update board");
-    }
-
     setActiveIssue(null);
+
+    // Error handling is done in the optimistic update hooks
+    if (error) {
+      toast.error(`Update failed: ${error}`);
+    }
   };
 
   const handleCreateIssue = async (
@@ -148,15 +164,53 @@ export function Board({ issues }: { issues: Issue[] }) {
 
   const columns: Issue["status"][] = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
 
+  // Prepare filter data
+  const allLabels = Array.from(new Set(issues.flatMap(issue => issue.labels)));
+  const allAssignees = Array.from(new Set(issues.map(issue => issue.assigneeId).filter(Boolean)))
+    .map(assigneeId => ({
+      id: assigneeId!,
+      name: assigneeId === "demo-user" ? "Demo User" : `User ${assigneeId!.slice(-4)}`,
+    }));
+  const allProjects = Array.from(new Set(issues.map(issue => issue.projectId)))
+    .map(projectId => ({
+      id: projectId,
+      name: `Project ${projectId.slice(-4)}`,
+    }));
+
   return (
     <>
+      <IssueFilters
+        availableLabels={allLabels}
+        availableAssignees={allAssignees}
+        availableProjects={allProjects}
+      />
+
+      {error && (
+        <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="mb-4 text-sm text-muted-foreground">
+        <p>Используйте клавиатурные сокращения:</p>
+        <ul className="mt-1 space-y-1">
+          <li>• Ctrl+←/→ - перемещение задач между колонками</li>
+          <li>• Ctrl+↑/↓ - навигация между задачами</li>
+          <li>• Enter/Space - открытие деталей задачи</li>
+        </ul>
+      </div>
+
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid grid-cols-4 gap-6 h-full">
+        <div
+          className={`grid grid-cols-4 gap-6 h-full ${isLoading ? 'opacity-70 pointer-events-none' : ''}`}
+          role="region"
+          aria-label="Kanban board"
+        >
           {columns.map((status) => (
             <Column
               key={status}
@@ -164,6 +218,9 @@ export function Board({ issues }: { issues: Issue[] }) {
               items={items.filter((item) => item.status === status)}
               onCreateIssue={handleCreateIssue}
               onIssueClick={handleIssueClick}
+              canCreateIssue={hasPermission("create_issue")}
+              selectedIssueId={selectedIssue?.id}
+              draggedIssueId={activeIssue?.id}
             />
           ))}
         </div>

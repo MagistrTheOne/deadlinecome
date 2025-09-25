@@ -1,7 +1,7 @@
 import { Issue } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { TypeColors, PriorityColors, StatusColors } from "@/lib/types";
+import { TypeStyles, PriorityStyles, StatusColors, getLabelColor } from "@/lib/types";
 import { Calendar, MessageCircle, Paperclip } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
@@ -9,27 +9,48 @@ interface IssueCardProps {
   issue: Issue;
   onClick?: () => void;
   className?: string;
+  isSelected?: boolean;
+  isDragging?: boolean;
 }
 
-export function IssueCard({ issue, onClick, className }: IssueCardProps) {
+export function IssueCard({ issue, onClick, className, isSelected = false, isDragging = false }: IssueCardProps) {
+  const priorityStyle = PriorityStyles[issue.priority];
+  const typeStyle = TypeStyles[issue.type];
+
   return (
     <div
-      className={`bg-card border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow ${className}`}
+      className={`bg-card border rounded-lg p-4 cursor-pointer hover:shadow-md transition-all duration-200 ${
+        isSelected ? "ring-2 ring-primary ring-offset-2" : ""
+      } ${isDragging ? "opacity-50 rotate-2" : ""} ${
+        priorityStyle.borderColor
+      } border-l-4 ${className}`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-label={`Issue ${issue.key}: ${issue.title} - Priority ${issue.priority}, Type ${issue.type}`}
+      aria-selected={isSelected}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="font-mono text-sm text-muted-foreground">{issue.key}</span>
           <Badge
             variant="secondary"
-            className={`${TypeColors[issue.type]} border-0`}
+            className={`${typeStyle.color} ${typeStyle.bgColor} ${typeStyle.borderColor} border font-medium`}
           >
+            <span className="mr-1">{typeStyle.icon}</span>
             {issue.type}
           </Badge>
           <Badge
             variant="outline"
-            className={`${PriorityColors[issue.priority]} border-0`}
+            className={`${priorityStyle.color} ${priorityStyle.bgColor} ${priorityStyle.borderColor} border font-medium`}
           >
+            <span className="mr-1">{priorityStyle.icon}</span>
             {issue.priority}
           </Badge>
         </div>
@@ -62,12 +83,16 @@ export function IssueCard({ issue, onClick, className }: IssueCardProps) {
           {issue.labels.length > 0 && (
             <div className="flex gap-1">
               {issue.labels.slice(0, 2).map((label) => (
-                <Badge key={label} variant="outline" className="text-xs">
+                <Badge
+                  key={label}
+                  variant="outline"
+                  className={`text-xs font-medium border ${getLabelColor(label)}`}
+                >
                   {label}
                 </Badge>
               ))}
               {issue.labels.length > 2 && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs bg-gray-100 text-gray-700 border-gray-300">
                   +{issue.labels.length - 2}
                 </Badge>
               )}
