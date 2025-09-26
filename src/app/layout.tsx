@@ -1,4 +1,4 @@
-import "@/styles/globals.css";
+import "./globals.css";
 import { QueryProvider } from "@/lib/query-client";
 import { AuthProvider } from "@/lib/auth-provider";
 import type { Metadata } from "next";

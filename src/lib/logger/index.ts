@@ -1,4 +1,4 @@
-import winston from 'winston';
+nimport winston from 'winston';
 import path from 'path';
 
 // Создаем директорию для логов
@@ -146,6 +146,7 @@ export const aiLogger = winston.createLogger({
 
 // Утилиты для логирования
 export class LoggerService {
+  static websocket: any;
   /**
    * Логирование API запросов
    */

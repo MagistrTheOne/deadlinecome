@@ -2,313 +2,589 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
   CheckCircle,
   Clock,
   Target,
-  Brain,
+  Zap,
+  Users,
+  Code,
+  GitBranch,
   BarChart3,
-  Calendar,
-  Users
+  Activity,
+  Brain,
+  Shield,
+  DollarSign
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface Prediction {
-  id: string;
-  type: "deadline_risk" | "team_burnout" | "budget_overrun" | "quality_issue";
-  title: string;
-  description: string;
-  probability: number;
-  impact: "low" | "medium" | "high" | "critical";
-  timeframe: string;
-  recommendations: string[];
-}
-
-interface TeamHealth {
-  overall: number;
-  workload: number;
-  satisfaction: number;
-  productivity: number;
-  trends: {
-    workload: "increasing" | "stable" | "decreasing";
-    satisfaction: "increasing" | "stable" | "decreasing";
-    productivity: "increasing" | "stable" | "decreasing";
+interface PredictionData {
+  sprint: {
+    velocity: number;
+    predictedVelocity: number;
+    confidence: number;
+    riskLevel: 'low' | 'medium' | 'high';
+    factors: string[];
+  };
+  project: {
+    completionDate: Date;
+    predictedCompletionDate: Date;
+    onTimeProbability: number;
+    budgetOverrunRisk: number;
+    qualityScore: number;
+  };
+  team: {
+    burnoutRisk: number;
+    productivityTrend: 'increasing' | 'stable' | 'decreasing';
+    collaborationScore: number;
+    skillGapAnalysis: string[];
+  };
+  code: {
+    bugPrediction: number;
+    technicalDebt: number;
+    maintainabilityScore: number;
+    refactoringPriority: string[];
   };
 }
 
-export function PredictiveAnalytics() {
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [teamHealth, setTeamHealth] = useState<TeamHealth | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+interface PredictiveAnalyticsProps {
+  workspaceId?: string;
+  projectId?: string;
+  className?: string;
+}
 
+export function PredictiveAnalytics({
+  workspaceId,
+  projectId,
+  className
+}: PredictiveAnalyticsProps) {
+  const [predictions, setPredictions] = useState<PredictionData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'sprint' | 'project' | 'team' | 'code'>('overview');
+
+  // Mock predictive data - in real app, this would come from ML models
   useEffect(() => {
-    // Загружаем данные при монтировании
-    loadPredictions();
-    loadTeamHealth();
-  }, []);
+    const loadPredictions = async () => {
+      setIsLoading(true);
 
-  const loadPredictions = async () => {
-    // Симуляция загрузки данных
-    const mockPredictions: Prediction[] = [
-      {
-        id: "1",
-        type: "deadline_risk",
-        title: "Риск срыва дедлайна проекта 'DeadLine App'",
-        description: "На основе текущей скорости разработки и оставшихся задач, вероятность срыва дедлайна составляет 75%",
-        probability: 75,
-        impact: "high",
-        timeframe: "2 недели",
-        recommendations: [
-          "Добавить дополнительного разработчика",
-          "Приоритизировать критические функции",
-          "Рассмотреть возможность переноса дедлайна"
-        ]
-      },
-      {
-        id: "2",
-        type: "team_burnout",
-        title: "Риск выгорания команды",
-        description: "Высокая загрузка команды в течение последних 3 недель может привести к снижению продуктивности",
-        probability: 60,
-        impact: "medium",
-        timeframe: "1 месяц",
-        recommendations: [
-          "Снизить интенсивность работы",
-          "Добавить дни отдыха",
-          "Провести ретроспективу команды"
-        ]
-      },
-      {
-        id: "3",
-        type: "quality_issue",
-        title: "Потенциальные проблемы с качеством",
-        description: "Увеличение количества багов в последних релизах указывает на возможные проблемы с тестированием",
-        probability: 45,
-        impact: "medium",
-        timeframe: "3 недели",
-        recommendations: [
-          "Усилить процесс тестирования",
-          "Добавить автоматизированные тесты",
-          "Провести код-ревью"
-        ]
-      }
-    ];
-    
-    setPredictions(mockPredictions);
-  };
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-  const loadTeamHealth = async () => {
-    const mockTeamHealth: TeamHealth = {
-      overall: 78,
-      workload: 85,
-      satisfaction: 72,
-      productivity: 88,
-      trends: {
-        workload: "increasing",
-        satisfaction: "decreasing", 
-        productivity: "stable"
-      }
+      const mockPredictions: PredictionData = {
+        sprint: {
+          velocity: 21,
+          predictedVelocity: 18,
+          confidence: 0.78,
+          riskLevel: 'medium',
+          factors: [
+            'Недостаток тестирования',
+            'Высокая нагрузка на команду',
+            'Технический долг',
+            'Отсутствие ретроспективы'
+          ]
+        },
+        project: {
+          completionDate: new Date('2024-12-15'),
+          predictedCompletionDate: new Date('2024-12-20'),
+          onTimeProbability: 0.65,
+          budgetOverrunRisk: 0.25,
+          qualityScore: 7.8
+        },
+        team: {
+          burnoutRisk: 0.35,
+          productivityTrend: 'stable',
+          collaborationScore: 8.2,
+          skillGapAnalysis: [
+            'Недостаток опыта в DevOps',
+            'Необходимы навыки машинного обучения',
+            'Требуется углубление в архитектуру'
+          ]
+        },
+        code: {
+          bugPrediction: 12,
+          technicalDebt: 0.42,
+          maintainabilityScore: 6.5,
+          refactoringPriority: [
+            'Модуляризация компонентов',
+            'Оптимизация запросов к БД',
+            'Улучшение обработки ошибок',
+            'Рефакторинг legacy кода'
+          ]
+        }
+      };
+
+      setPredictions(mockPredictions);
+      setIsLoading(false);
     };
-    
-    setTeamHealth(mockTeamHealth);
+
+    loadPredictions();
+  }, [workspaceId, projectId]);
+
+  const getRiskColor = (risk: number) => {
+    if (risk < 0.3) return 'text-green-500';
+    if (risk < 0.7) return 'text-yellow-500';
+    return 'text-red-500';
   };
 
-  const getImpactColor = (impact: string) => {
-    switch (impact) {
-      case "critical":
-        return "bg-analytics-rose/20 text-analytics-rose border-analytics-rose/30 backdrop-blur-sm";
-      case "high":
-        return "bg-analytics-orange/20 text-analytics-orange border-analytics-orange/30 backdrop-blur-sm";
-      case "medium":
-        return "bg-analytics-amber/20 text-analytics-amber border-analytics-amber/30 backdrop-blur-sm";
-      case "low":
-        return "bg-analytics-emerald/20 text-analytics-emerald border-analytics-emerald/30 backdrop-blur-sm";
-      default:
-        return "bg-glass-medium text-white border-white/20 backdrop-blur-sm";
-    }
+  const getRiskIcon = (risk: number) => {
+    if (risk < 0.3) return <CheckCircle className="h-4 w-4" />;
+    if (risk < 0.7) return <AlertTriangle className="h-4 w-4" />;
+    return <AlertTriangle className="h-4 w-4 text-red-500" />;
   };
 
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case "increasing":
-        return <TrendingUp className="h-4 w-4 text-analytics-emerald" />;
-      case "decreasing":
-        return <TrendingDown className="h-4 w-4 text-analytics-rose" />;
-      default:
-        return <Target className="h-4 w-4 text-analytics-cyan" />;
-    }
+  const getConfidenceBadge = (confidence: number) => {
+    const color = confidence > 0.8 ? 'bg-green-500' :
+                  confidence > 0.6 ? 'bg-yellow-500' : 'bg-red-500';
+    return (
+      <Badge className={cn("text-white", color)}>
+        {(confidence * 100).toFixed(0)}% уверенность
+      </Badge>
+    );
   };
 
-  const getProbabilityColor = (probability: number) => {
-    if (probability >= 70) return "text-analytics-rose";
-    if (probability >= 40) return "text-analytics-amber";
-    return "text-analytics-emerald";
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* Team Health Overview */}
-      {teamHealth && (
-        <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Здоровье команды
-            </CardTitle>
-            <CardDescription className="text-white/60">
-              Общий показатель здоровья команды и тренды
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80 text-sm">Общее здоровье</span>
-                  <span className="text-white font-medium">{teamHealth.overall}%</span>
-                </div>
-                <Progress value={teamHealth.overall} className="h-2" />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80 text-sm">Загрузка</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-white font-medium">{teamHealth.workload}%</span>
-                    {getTrendIcon(teamHealth.trends.workload)}
-                  </div>
-                </div>
-                <Progress value={teamHealth.workload} className="h-2" />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80 text-sm">Удовлетворенность</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-white font-medium">{teamHealth.satisfaction}%</span>
-                    {getTrendIcon(teamHealth.trends.satisfaction)}
-                  </div>
-                </div>
-                <Progress value={teamHealth.satisfaction} className="h-2" />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80 text-sm">Продуктивность</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-white font-medium">{teamHealth.productivity}%</span>
-                    {getTrendIcon(teamHealth.trends.productivity)}
-                  </div>
-                </div>
-                <Progress value={teamHealth.productivity} className="h-2" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* AI Predictions */}
-      <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+  if (isLoading) {
+    return (
+      <Card className={cn("w-full", className)}>
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            Предиктивная аналитика
-          </CardTitle>
-          <CardDescription className="text-white/60">
-            AI предсказывает потенциальные проблемы и риски на основе исторических данных
+          <div className="flex items-center gap-2">
+            <Brain className="h-6 w-6 animate-pulse" />
+            <CardTitle>AI Predictive Analytics</CardTitle>
+          </div>
+          <CardDescription>
+            Анализируем данные проекта с помощью машинного обучения...
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {predictions.map((prediction) => (
-              <div key={prediction.id} className="bg-black/30 backdrop-blur-sm border border-white/20 rounded-lg p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h4 className="text-white font-medium mb-1">{prediction.title}</h4>
-                    <p className="text-white/70 text-sm mb-2">{prediction.description}</p>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge className={getImpactColor(prediction.impact)}>
-                        {prediction.impact === "critical" ? "Критический" :
-                         prediction.impact === "high" ? "Высокий" :
-                         prediction.impact === "medium" ? "Средний" : "Низкий"} риск
-                      </Badge>
-                      <Badge className="bg-black/50 text-white border-white/30">
-                        <Clock className="mr-1 h-3 w-3" />
-                        {prediction.timeframe}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-2xl font-bold ${getProbabilityColor(prediction.probability)}`}>
-                      {prediction.probability}%
-                    </div>
-                    <div className="text-white/60 text-xs">вероятность</div>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <h5 className="text-white font-medium text-sm">Рекомендации:</h5>
-                  <ul className="space-y-1">
-                    {prediction.recommendations.map((rec, index) => (
-                      <li key={index} className="text-white/70 text-sm flex items-start gap-2">
-                        <CheckCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        {rec}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
+            <div className="animate-pulse space-y-3">
+              <div className="h-4 bg-muted rounded w-3/4"></div>
+              <div className="h-4 bg-muted rounded w-1/2"></div>
+              <div className="h-4 bg-muted rounded w-2/3"></div>
+            </div>
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
           </div>
         </CardContent>
       </Card>
+    );
+  }
 
-      {/* Performance Trends */}
-      <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Тренды производительности
-          </CardTitle>
-          <CardDescription className="text-white/60">
-            Анализ трендов и прогнозы на основе исторических данных
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="bg-glass-dark backdrop-blur-sm border border-analytics-emerald/20 rounded-lg p-4 hover:border-analytics-emerald/40 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-analytics-emerald" />
-                <span className="text-white font-medium">Скорость разработки</span>
-              </div>
-              <div className="text-2xl font-bold text-analytics-emerald mb-1">+12%</div>
-              <div className="text-white/60 text-sm">за последний месяц</div>
-            </div>
-            
-            <div className="bg-glass-dark backdrop-blur-sm border border-analytics-cyan/20 rounded-lg p-4 hover:border-analytics-cyan/40 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <Target className="h-4 w-4 text-analytics-cyan" />
-                <span className="text-white font-medium">Точность оценок</span>
-              </div>
-              <div className="text-2xl font-bold text-analytics-cyan mb-1">87%</div>
-              <div className="text-white/60 text-sm">соответствие планам</div>
-            </div>
-            
-            <div className="bg-glass-dark backdrop-blur-sm border border-analytics-violet/20 rounded-lg p-4 hover:border-analytics-violet/40 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="h-4 w-4 text-analytics-violet" />
-                <span className="text-white font-medium">Соблюдение дедлайнов</span>
-              </div>
-              <div className="text-2xl font-bold text-analytics-violet mb-1">92%</div>
-              <div className="text-white/60 text-sm">вовремя выполнено</div>
-            </div>
-          </div>
+  if (!predictions) {
+    return (
+      <Card className={cn("w-full", className)}>
+        <CardContent className="p-8 text-center">
+          <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">Нет данных для анализа</h3>
+          <p className="text-muted-foreground">
+            Недостаточно данных для предиктивного анализа. Продолжайте работу над проектом.
+          </p>
         </CardContent>
       </Card>
-    </div>
+    );
+  }
+
+  const tabs = [
+    { id: 'overview', label: 'Обзор', icon: <BarChart3 className="h-4 w-4" /> },
+    { id: 'sprint', label: 'Спринт', icon: <Target className="h-4 w-4" /> },
+    { id: 'project', label: 'Проект', icon: <Code className="h-4 w-4" /> },
+    { id: 'team', label: 'Команда', icon: <Users className="h-4 w-4" /> },
+    { id: 'code', label: 'Код', icon: <GitBranch className="h-4 w-4" /> }
+  ];
+
+  return (
+    <Card className={cn("w-full", className)}>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Brain className="h-6 w-6 text-purple-500" />
+            <div>
+              <CardTitle>AI Predictive Analytics</CardTitle>
+              <CardDescription>
+                Предиктивные модели для анализа рисков и оптимизации процессов
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+              <Activity className="h-3 w-3 mr-1" />
+              Активно
+            </Badge>
+            <Button size="sm" variant="outline">
+              <Zap className="h-4 w-4 mr-2" />
+              Обновить анализ
+            </Button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex gap-1 mt-4">
+          {tabs.map((tab) => (
+            <Button
+              key={tab.id}
+              variant={selectedTab === tab.id ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setSelectedTab(tab.id as any)}
+              className="flex items-center gap-2"
+            >
+              {tab.icon}
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        {selectedTab === 'overview' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Sprint Velocity */}
+            <Card className="border-l-4 border-l-blue-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Target className="h-5 w-5 text-blue-500" />
+                  <Badge variant="outline">
+                    {predictions.sprint.riskLevel === 'low' ? 'Низкий' :
+                     predictions.sprint.riskLevel === 'medium' ? 'Средний' : 'Высокий'} риск
+                  </Badge>
+                </div>
+                <div className="text-2xl font-bold">
+                  {predictions.sprint.predictedVelocity}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Прогноз скорости спринта
+                </p>
+                <div className="mt-2">
+                  {getConfidenceBadge(predictions.sprint.confidence)}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Project Timeline */}
+            <Card className="border-l-4 border-l-green-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Clock className="h-5 w-5 text-green-500" />
+                  <span className="text-sm">
+                    {(predictions.project.onTimeProbability * 100).toFixed(0)}% вероятность
+                  </span>
+                </div>
+                <div className="text-2xl font-bold">
+                  {predictions.project.predictedCompletionDate.toLocaleDateString('ru-RU', {
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Ожидаемая дата завершения
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Team Health */}
+            <Card className="border-l-4 border-l-orange-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Users className="h-5 w-5 text-orange-500" />
+                  <span className={cn("text-sm", getRiskColor(predictions.team.burnoutRisk))}>
+                    {(predictions.team.burnoutRisk * 100).toFixed(0)}% риск выгорания
+                  </span>
+                </div>
+                <div className="text-2xl font-bold">
+                  {predictions.team.collaborationScore}/10
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Уровень сотрудничества
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Code Quality */}
+            <Card className="border-l-4 border-l-purple-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Shield className="h-5 w-5 text-purple-500" />
+                  <span className="text-sm">
+                    {predictions.code.bugPrediction} багов ожидается
+                  </span>
+                </div>
+                <div className="text-2xl font-bold">
+                  {predictions.code.maintainabilityScore}/10
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Оценка поддерживаемости
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {selectedTab === 'sprint' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Анализ спринта</h3>
+              {getConfidenceBadge(predictions.sprint.confidence)}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Скорость команды</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Текущая скорость</span>
+                    <Badge>{predictions.sprint.velocity} SP</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Прогноз на следующий спринт</span>
+                    <Badge variant="outline">{predictions.sprint.predictedVelocity} SP</Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Доверие к прогнозу</span>
+                      <span>{(predictions.sprint.confidence * 100).toFixed(0)}%</span>
+                    </div>
+                    <Progress value={predictions.sprint.confidence * 100} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Факторы риска</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {predictions.sprint.factors.map((factor, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        {getRiskIcon(predictions.sprint.riskLevel === 'high' ? 0.8 : 0.5)}
+                        <span className="text-sm">{factor}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === 'project' && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Общий анализ проекта</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Сроки
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Плановая дата</p>
+                    <p className="font-medium">
+                      {predictions.project.completionDate.toLocaleDateString('ru-RU')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Прогноз</p>
+                    <p className="font-medium text-orange-600">
+                      {predictions.project.predictedCompletionDate.toLocaleDateString('ru-RU')}
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Вероятность соблюдения сроков</span>
+                      <span>{(predictions.project.onTimeProbability * 100).toFixed(0)}%</span>
+                    </div>
+                    <Progress value={predictions.project.onTimeProbability * 100} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <DollarSign className="h-5 w-5" />
+                    Бюджет
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Риск превышения бюджета</p>
+                    <p className={cn("font-medium", getRiskColor(predictions.project.budgetOverrunRisk))}>
+                      {(predictions.project.budgetOverrunRisk * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Уровень риска</span>
+                      <span>{predictions.project.budgetOverrunRisk < 0.3 ? 'Низкий' :
+                             predictions.project.budgetOverrunRisk < 0.7 ? 'Средний' : 'Высокий'}</span>
+                    </div>
+                    <Progress value={predictions.project.budgetOverrunRisk * 100} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5" />
+                    Качество
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Общая оценка качества</p>
+                    <p className="text-2xl font-bold">
+                      {predictions.project.qualityScore}/10
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Качество кода</span>
+                      <span>{predictions.project.qualityScore > 8 ? 'Отлично' :
+                             predictions.project.qualityScore > 6 ? 'Хорошо' : 'Требует улучшения'}</span>
+                    </div>
+                    <Progress value={predictions.project.qualityScore * 10} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === 'team' && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Анализ команды</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Здоровье команды</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Риск выгорания</span>
+                    <Badge className={cn(
+                      predictions.team.burnoutRisk < 0.3 ? "bg-green-500" :
+                      predictions.team.burnoutRisk < 0.7 ? "bg-yellow-500" : "bg-red-500"
+                    )}>
+                      {(predictions.team.burnoutRisk * 100).toFixed(0)}%
+                    </Badge>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span>Продуктивность</span>
+                    <Badge variant="outline">
+                      {predictions.team.productivityTrend === 'increasing' ? 'Растет' :
+                       predictions.team.productivityTrend === 'stable' ? 'Стабильна' : 'Падает'}
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Уровень сотрудничества</span>
+                      <span>{predictions.team.collaborationScore}/10</span>
+                    </div>
+                    <Progress value={predictions.team.collaborationScore * 10} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Анализ навыков</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Рекомендуемые улучшения:</p>
+                    {predictions.team.skillGapAnalysis.map((gap, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Target className="h-4 w-4 text-blue-500 mt-0.5" />
+                        <span className="text-sm">{gap}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === 'code' && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Анализ кода</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Метрики качества</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Прогноз багов</span>
+                    <Badge variant="outline">{predictions.code.bugPrediction} шт.</Badge>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span>Технический долг</span>
+                    <Badge className={cn(
+                      predictions.code.technicalDebt < 0.3 ? "bg-green-500" :
+                      predictions.code.technicalDebt < 0.7 ? "bg-yellow-500" : "bg-red-500"
+                    )}>
+                      {(predictions.code.technicalDebt * 100).toFixed(0)}%
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Поддерживаемость</span>
+                      <span>{predictions.code.maintainabilityScore}/10</span>
+                    </div>
+                    <Progress value={predictions.code.maintainabilityScore * 10} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Рекомендации по рефакторингу</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Приоритетные задачи:</p>
+                    {predictions.code.refactoringPriority.map((task, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Zap className="h-4 w-4 text-purple-500 mt-0.5" />
+                        <span className="text-sm">{task}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Alert>
+              <Brain className="h-4 w-4" />
+              <AlertTitle>AI Insights</AlertTitle>
+              <AlertDescription>
+                На основе анализа кода, система рекомендует провести рефакторинг наиболее проблемных областей.
+                Это поможет снизить технический долг и улучшить поддерживаемость проекта.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
