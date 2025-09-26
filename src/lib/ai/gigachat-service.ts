@@ -329,3 +329,6 @@ class GigaChatService {
 }
 
 export { GigaChatService };
+
+// Экспортируем экземпляр для обратной совместимости
+export const gigaChatService = new GigaChatService();

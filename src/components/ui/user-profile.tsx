@@ -503,7 +503,7 @@ export function UserProfile() {
                     <div className="text-white font-medium text-sm">{achievement.title}</div>
                     <div className="text-white/60 text-xs">{achievement.description}</div>
                     <div className="text-white/40 text-xs">
-                      {achievement.earnedAt.toLocaleDateString()}
+                      {new Date(achievement.earnedAt).toLocaleDateString()}
                     </div>
                   </div>
                 </div>

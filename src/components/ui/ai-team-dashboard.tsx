@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Bot, 
   MessageCircle, 
@@ -53,6 +54,10 @@ export default function AITeamDashboard() {
   const [chats, setChats] = useState<AIChat[]>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    status: "ALL",
+    specialization: "ALL"
+  });
 
   // Fallback demo data
   const demoAITeam: AITeamMember[] = [
@@ -310,6 +315,46 @@ export default function AITeamDashboard() {
           <Bot className="w-4 h-4 mr-1" />
           {aiTeam.filter(member => member.isActive).length} активных
         </Badge>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-2">
+          <label className="text-white/70 text-sm">Статус:</label>
+          <Select 
+            value={filters.status} 
+            onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
+          >
+            <SelectTrigger className="w-32 bg-gray-800 border-gray-600 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Все</SelectItem>
+              <SelectItem value="ACTIVE">Активные</SelectItem>
+              <SelectItem value="IDLE">Свободные</SelectItem>
+              <SelectItem value="BUSY">Занятые</SelectItem>
+              <SelectItem value="OFFLINE">Офлайн</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-white/70 text-sm">Специализация:</label>
+          <Select 
+            value={filters.specialization} 
+            onValueChange={(value) => setFilters(prev => ({ ...prev, specialization: value }))}
+          >
+            <SelectTrigger className="w-40 bg-gray-800 border-gray-600 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Все</SelectItem>
+              <SelectItem value="Техническая стратегия и архитектура">Архитектура</SelectItem>
+              <SelectItem value="Поиск и анализ кандидатов">HR</SelectItem>
+              <SelectItem value="Тестирование и QA">QA</SelectItem>
+              <SelectItem value="Дизайн и UX">Дизайн</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Tabs defaultValue="team" className="w-full">
