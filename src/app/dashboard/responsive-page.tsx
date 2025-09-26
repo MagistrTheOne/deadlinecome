@@ -4,22 +4,89 @@ import { useSession } from "@/lib/auth-client";
 import { ResponsiveDashboardLayout } from "@/components/layout/responsive-dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ActivityFeed } from "@/components/ui/activity-feed";
-import { ActivityChart } from "@/components/ui/activity-chart";
-import { QuickActions } from "@/components/ui/quick-actions";
-import { AdvancedFeatures } from "@/components/ui/advanced-features";
-import { AIAssistant } from "@/components/ui/ai-assistant";
-import { SmartAssignment } from "@/components/ui/smart-assignment";
-import { PredictiveAnalytics } from "@/components/ui/predictive-analytics";
-import { EnhancedAnalytics } from "@/components/ui/enhanced-analytics";
-import { AISmartWorkflows } from "@/components/ui/ai-smart-workflows";
-import { RealtimeAnalyticsDashboard } from "@/components/ui/realtime-analytics-dashboard";
-import { AdvancedAutomationRules } from "@/components/ui/advanced-automation-rules";
-import { EnhancedCollaboration } from "@/components/ui/enhanced-collaboration";
-import { SmartSprintPlanning } from "@/components/ui/smart-sprint-planning";
-import { RealTimeCollaboration } from "@/components/ui/real-time-collaboration";
-import { AIStatus } from "@/components/ui/ai-status";
-import { DraggableVasilyChat } from "@/components/ui/draggable-vasily-chat";
+import dynamic from "next/dynamic";
+import { AISkeleton } from "@/components/ui/loading-skeleton";
+
+// Динамические импорты компонентов для code-splitting
+const ActivityFeed = dynamic(() => import("@/components/ui/activity-feed"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const ActivityChart = dynamic(() => import("@/components/ui/activity-chart"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const QuickActions = dynamic(() => import("@/components/ui/quick-actions"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const AdvancedFeatures = dynamic(() => import("@/components/ui/advanced-features"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const AIAssistant = dynamic(() => import("@/components/ui/ai-assistant"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const SmartAssignment = dynamic(() => import("@/components/ui/smart-assignment"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const PredictiveAnalytics = dynamic(() => import("@/components/ui/predictive-analytics"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const EnhancedAnalytics = dynamic(() => import("@/components/ui/enhanced-analytics"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const AISmartWorkflows = dynamic(() => import("@/components/ui/ai-smart-workflows"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const RealtimeAnalyticsDashboard = dynamic(() => import("@/components/ui/realtime-analytics-dashboard"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const AdvancedAutomationRules = dynamic(() => import("@/components/ui/advanced-automation-rules"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const EnhancedCollaboration = dynamic(() => import("@/components/ui/enhanced-collaboration"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const SmartSprintPlanning = dynamic(() => import("@/components/ui/smart-sprint-planning"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const RealTimeCollaboration = dynamic(() => import("@/components/ui/real-time-collaboration"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const AIStatus = dynamic(() => import("@/components/ui/ai-status"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
+
+const DraggableVasilyChat = dynamic(() => import("@/components/ui/draggable-vasily-chat"), {
+  ssr: false,
+  loading: () => <AISkeleton />
+});
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
 

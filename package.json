@@ -12,7 +12,8 @@
     "db:push": "tsx scripts/db-push.ts",
     "db:studio": "drizzle-kit studio",
     "test": "vitest",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -54,7 +55,7 @@
     "lru-cache": "^10.1.0",
     "lucide-react": "^0.294.0",
     "multer": "^1.4.5-lts.1",
-    "next": "15.0.3",
+    "next": "^15.5.4",
     "nodemailer": "^6.9.7",
     "openai": "^5.23.0",
     "pdfkit": "^0.14.0",
@@ -79,6 +80,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.5.4",
     "@types/multer": "^1.4.11",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.14",
@@ -87,8 +89,8 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/simple-peer": "^9.11.8",
-    "@vitest/coverage-v8": "^1.0.4",
-    "drizzle-kit": "^0.20.18",
+    "@vitest/coverage-v8": "^3.2.4",
+    "drizzle-kit": "^0.31.5",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "jsdom": "^27.0.0",
@@ -96,6 +98,6 @@
     "tailwindcss": "^3.3.0",
     "tsx": "^4.6.2",
     "typescript": "^5",
-    "vitest": "^1.0.4"
+    "vitest": "^3.2.4"
   }
 }

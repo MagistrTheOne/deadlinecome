@@ -31,21 +31,74 @@ import { RoleManagement } from "@/components/ui/role-management";
 import { VasilyProjectManager } from "@/components/ui/vasily-project-manager";
 import { RealTimeTodo } from "@/components/ui/real-time-todo";
 import { WebSocketStats } from "@/components/ui/websocket-stats";
-import AITeamDashboard from "@/components/ui/ai-team-dashboard";
-import BugTracker from "@/components/ui/bug-tracker";
-import AICodeReviewDashboard from "@/components/ui/ai-code-review-dashboard";
-import { UserProfile } from "@/components/ui/user-profile";
-import AILearningDashboard from "@/components/ui/ai-learning-dashboard";
-import AIMarketplaceDashboard from "@/components/ui/ai-marketplace-dashboard";
-import IndustryTemplatesDashboard from "@/components/ui/industry-templates-dashboard";
-import GlobalTeamsDashboard from "@/components/ui/global-teams-dashboard";
-import AICommandCenter from "@/components/ui/ai-command-center";
-import AITaskManager from "@/components/ui/ai-task-manager";
-import AIPersonalityCustomizer from "@/components/ui/ai-personality-customizer";
-import GamificationDashboard from "@/components/ui/gamification-dashboard";
-import AICodeGenerator from "@/components/ui/ai-code-generator";
-import AIProjectPredictor from "@/components/ui/ai-project-predictor";
-import AIDesignSystem from "@/components/ui/ai-design-system";
+import dynamic from "next/dynamic";
+import { AIDashboardSkeleton } from "@/components/ui/loading-skeleton";
+
+// Динамические импорты AI-компонентов для code-splitting
+const AITeamDashboard = dynamic(() => import("@/components/ui/ai-team-dashboard"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const AICodeReviewDashboard = dynamic(() => import("@/components/ui/ai-code-review-dashboard"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const AILearningDashboard = dynamic(() => import("@/components/ui/ai-learning-dashboard"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const AIMarketplaceDashboard = dynamic(() => import("@/components/ui/ai-marketplace-dashboard"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const IndustryTemplatesDashboard = dynamic(() => import("@/components/ui/industry-templates-dashboard"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const GlobalTeamsDashboard = dynamic(() => import("@/components/ui/global-teams-dashboard"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const AICommandCenter = dynamic(() => import("@/components/ui/ai-command-center"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const AITaskManager = dynamic(() => import("@/components/ui/ai-task-manager"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const AIPersonalityCustomizer = dynamic(() => import("@/components/ui/ai-personality-customizer"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const GamificationDashboard = dynamic(() => import("@/components/ui/gamification-dashboard"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const AICodeGenerator = dynamic(() => import("@/components/ui/ai-code-generator"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const AIProjectPredictor = dynamic(() => import("@/components/ui/ai-project-predictor"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
+
+const AIDesignSystem = dynamic(() => import("@/components/ui/ai-design-system"), {
+  ssr: false,
+  loading: () => <AIDashboardSkeleton />
+});
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle, Brain, Send, Minimize2, X, RefreshCw, FolderKanban, User, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";

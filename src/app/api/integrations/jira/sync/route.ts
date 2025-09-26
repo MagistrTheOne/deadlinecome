@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { jiraService } from '@/lib/integrations/jira-service';
-import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
+import { rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
+import type { NextRequest } from 'next/server';
 
 // POST /api/integrations/jira/sync - Синхронизация с Jira
 export async function POST(request: NextRequest) {
