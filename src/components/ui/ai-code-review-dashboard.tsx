@@ -395,7 +395,7 @@ export default function AICodeReviewDashboard() {
                           {new Date(review.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      {review.blockingIssues.length > 0 && (
+                      {review.blockingIssues?.length > 0 && (
                         <div className="flex items-center space-x-1">
                           <Lock className="w-4 h-4 text-red-400" />
                           <span className="text-sm text-red-400">Заблокировано</span>

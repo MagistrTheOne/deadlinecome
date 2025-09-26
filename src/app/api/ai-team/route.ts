@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
 
     // В реальном приложении здесь была бы отправка сообщения AI-специалисту
     const response = {
-      success: true,
+        success: true,
       message: `Сообщение отправлено ${targetMember || "команде"}`,
       timestamp: new Date().toISOString()
     };

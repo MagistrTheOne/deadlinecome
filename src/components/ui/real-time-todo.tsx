@@ -131,8 +131,8 @@ export function RealTimeTodo({ projectId, workspaceId }: RealTimeTodoProps) {
         }
       };
 
-      ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
+      ws.onerror = (event) => {
+        console.error("WebSocket error:", event);
         setRealTimeStatus("disconnected");
       };
     } catch (error) {

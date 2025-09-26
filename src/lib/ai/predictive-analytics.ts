@@ -17,7 +17,7 @@ interface Prediction {
   description: string;
   recommendations: string[];
   timeframe: string;
-  confidence: number;
+    confidence: number;
 }
 
 interface RiskAssessment {

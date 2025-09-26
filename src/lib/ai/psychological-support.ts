@@ -90,7 +90,7 @@ export class PsychologicalSupport {
   }
 
   static getSupportData(): SupportData {
-    return {
+      return {
       messages: this.getSupportMessages(),
       activeCrises: this.getActiveCrises(),
       recommendations: this.getRecommendations(),

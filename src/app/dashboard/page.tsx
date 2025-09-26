@@ -38,8 +38,13 @@ import GlobalTeamsDashboard from "@/components/ui/global-teams-dashboard";
 import AICommandCenter from "@/components/ui/ai-command-center";
 import AITaskManager from "@/components/ui/ai-task-manager";
 import AIPersonalityCustomizer from "@/components/ui/ai-personality-customizer";
+import GamificationDashboard from "@/components/ui/gamification-dashboard";
+import AICodeGenerator from "@/components/ui/ai-code-generator";
+import AIProjectPredictor from "@/components/ui/ai-project-predictor";
+import AIDesignSystem from "@/components/ui/ai-design-system";
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import PremiumDashboardV2 from "@/components/ui/premium-dashboard-v2";
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
@@ -63,6 +68,9 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  // Используем новый премиум Dashboard V2.0
+  return <PremiumDashboardV2 />;
 
   const user = session.user;
 
@@ -328,6 +336,26 @@ export default function DashboardPage() {
       {/* AI Personality Customizer */}
       <div className="mt-8">
         <AIPersonalityCustomizer />
+      </div>
+
+      {/* Gamification System */}
+      <div className="mt-8">
+        <GamificationDashboard />
+      </div>
+
+      {/* AI Code Generator */}
+      <div className="mt-8">
+        <AICodeGenerator />
+      </div>
+
+      {/* AI Project Predictor */}
+      <div className="mt-8">
+        <AIProjectPredictor />
+      </div>
+
+      {/* AI Design System */}
+      <div className="mt-8">
+        <AIDesignSystem />
       </div>
 
     </DashboardLayout>

@@ -338,8 +338,8 @@ export function RoleManagement({ workspaceId, projectId }: RoleManagementProps) 
                   <SelectValue placeholder="Выберите роль" />
                 </SelectTrigger>
                 <SelectContent className="bg-black/80 border border-white/20">
-                  {Object.entries(availableRoles).map(([key, role]) => (
-                    <SelectItem key={key} value={key} className="text-white">
+                  {Object.entries(availableRoles || {}).map(([key, role], index) => (
+                    <SelectItem key={`${key}-${index}`} value={key} className="text-white">
                       <div className="flex items-center gap-2">
                         {getRoleIcon(key)}
                         {role.name}
