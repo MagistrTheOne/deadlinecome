@@ -35,6 +35,9 @@ import AILearningDashboard from "@/components/ui/ai-learning-dashboard";
 import AIMarketplaceDashboard from "@/components/ui/ai-marketplace-dashboard";
 import IndustryTemplatesDashboard from "@/components/ui/industry-templates-dashboard";
 import GlobalTeamsDashboard from "@/components/ui/global-teams-dashboard";
+import AICommandCenter from "@/components/ui/ai-command-center";
+import AITaskManager from "@/components/ui/ai-task-manager";
+import AIPersonalityCustomizer from "@/components/ui/ai-personality-customizer";
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -310,6 +313,21 @@ export default function DashboardPage() {
       {/* Global Teams */}
       <div className="mt-8">
         <GlobalTeamsDashboard />
+      </div>
+
+      {/* AI Command Center */}
+      <div className="mt-8">
+        <AICommandCenter />
+      </div>
+
+      {/* AI Task Manager */}
+      <div className="mt-8">
+        <AITaskManager />
+      </div>
+
+      {/* AI Personality Customizer */}
+      <div className="mt-8">
+        <AIPersonalityCustomizer />
       </div>
 
     </DashboardLayout>
