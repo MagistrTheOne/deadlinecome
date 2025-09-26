@@ -1,7 +1,7 @@
-import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, uuid } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   username: text("username").unique(), // Никнейм пользователя
   email: text("email").notNull().unique(),
@@ -25,7 +25,7 @@ export const user = pgTable("user", {
 });
 
 export const session = pgTable("session", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   expiresAt: timestamp("expires_at").notNull(),
   token: text("token").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -34,16 +34,16 @@ export const session = pgTable("session", {
     .notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
 
 export const account = pgTable("account", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
@@ -60,7 +60,7 @@ export const account = pgTable("account", {
 });
 
 export const verification = pgTable("verification", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -73,11 +73,11 @@ export const verification = pgTable("verification", {
 
 // Application-specific tables
 export const workspace = pgTable("workspace", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
-  ownerId: text("owner_id")
+  ownerId: uuid("owner_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -87,11 +87,11 @@ export const workspace = pgTable("workspace", {
 });
 
 export const workspaceMember = pgTable("workspace_member", {
-  id: text("id").primaryKey(),
-  workspaceId: text("workspace_id")
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id")
     .notNull()
     .references(() => workspace.id, { onDelete: "cascade" }),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   role: text("role").notNull().$type<"OWNER" | "ADMIN" | "MEMBER" | "VIEWER">(),
@@ -108,14 +108,14 @@ export const workspaceMember = pgTable("workspace_member", {
 }));
 
 export const project = pgTable("project", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   key: text("key").notNull(),
   name: text("name").notNull(),
   description: text("description"),
-  workspaceId: text("workspace_id")
+  workspaceId: uuid("workspace_id")
     .notNull()
     .references(() => workspace.id, { onDelete: "cascade" }),
-  leadId: text("lead_id")
+  leadId: uuid("lead_id")
     .references(() => user.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
@@ -124,19 +124,19 @@ export const project = pgTable("project", {
 });
 
 export const issue = pgTable("issue", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   key: text("key").notNull(),
   title: text("title").notNull(),
   description: text("description"),
   status: text("status").notNull().$type<"BACKLOG" | "TODO" | "IN_PROGRESS" | "DONE">(),
   priority: text("priority").notNull().$type<"LOWEST" | "LOW" | "MEDIUM" | "HIGH" | "HIGHEST">(),
   type: text("type").notNull().$type<"BUG" | "TASK" | "STORY" | "EPIC">(),
-  projectId: text("project_id")
+  projectId: uuid("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),
-  assigneeId: text("assignee_id")
+  assigneeId: uuid("assignee_id")
     .references(() => user.id, { onDelete: "set null" }),
-  reporterId: text("reporter_id")
+  reporterId: uuid("reporter_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   order: timestamp("order").defaultNow().notNull(),
@@ -153,11 +153,11 @@ export const issue = pgTable("issue", {
 
 // AI Assistant conversation history
 export const aiConversation = pgTable("ai_conversation", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  workspaceId: text("workspace_id")
+  workspaceId: uuid("workspace_id")
     .references(() => workspace.id, { onDelete: "cascade" }),
   query: text("query").notNull(),
   response: text("response").notNull(),
@@ -167,11 +167,11 @@ export const aiConversation = pgTable("ai_conversation", {
 
 // AI Task suggestions
 export const aiTaskSuggestion = pgTable("ai_task_suggestion", {
-  id: text("id").primaryKey(),
-  workspaceId: text("workspace_id")
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id")
     .notNull()
     .references(() => workspace.id, { onDelete: "cascade" }),
-  projectId: text("project_id")
+  projectId: uuid("project_id")
     .references(() => project.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
@@ -184,8 +184,8 @@ export const aiTaskSuggestion = pgTable("ai_task_suggestion", {
 
 // Project Status Management by Vasily
 export const projectStatus = pgTable("project_status", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),
   status: text("status").notNull().$type<"ON_TRACK" | "AT_RISK" | "BEHIND" | "BLOCKED" | "COMPLETED">(),
@@ -202,13 +202,13 @@ export const projectStatus = pgTable("project_status", {
 
 // Vasily AI Actions Log
 export const vasilyAction = pgTable("vasily_action", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),
   actionType: text("action_type").notNull().$type<"TASK_ASSIGNED" | "DEADLINE_ALERT" | "STATUS_UPDATE" | "RECOMMENDATION" | "AUTO_CREATE_TASK">(),
   description: text("description").notNull(),
-  targetUserId: text("target_user_id")
+  targetUserId: uuid("target_user_id")
     .references(() => user.id, { onDelete: "set null" }),
   metadata: text("metadata"), // JSON with additional data
   executed: boolean("executed").default(false),
@@ -217,7 +217,7 @@ export const vasilyAction = pgTable("vasily_action", {
 
 // AI Team Members
 export const aiTeamMember = pgTable("ai_team_member", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(), // Василий, Анна, Дмитрий, etc.
   role: text("role").notNull().$type<"AI_CTO" | "AI_HR" | "AI_PM" | "AI_QA" | "AI_DEVOPS" | "AI_DESIGNER" | "AI_ANALYST" | "AI_CODE_REVIEWER" | "AI_SECURITY" | "AI_PERFORMANCE" | "AI_DOCUMENTATION" | "AI_ANALYTICS" | "AI_MEETING_ASSISTANT" | "AI_BURNOUT_DETECTOR">(),
   specialization: text("specialization").notNull(),
@@ -233,7 +233,7 @@ export const aiTeamMember = pgTable("ai_team_member", {
 
 // Bug Reports
 export const bugReport = pgTable("bug_report", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
   description: text("description").notNull(),
   stepsToReproduce: text("steps_to_reproduce"),
@@ -242,15 +242,15 @@ export const bugReport = pgTable("bug_report", {
   status: text("status").notNull().$type<"NEW" | "ASSIGNED" | "IN_PROGRESS" | "TESTING" | "RESOLVED" | "CLOSED">().default("NEW"),
   priority: text("priority").notNull().$type<"CRITICAL" | "HIGH" | "MEDIUM" | "LOW">().default("MEDIUM"),
   category: text("category").notNull().$type<"FRONTEND" | "BACKEND" | "DATABASE" | "API" | "UI_UX" | "PERFORMANCE" | "SECURITY">(),
-  projectId: text("project_id")
+  projectId: uuid("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),
-  reporterId: text("reporter_id")
+  reporterId: uuid("reporter_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  assigneeId: text("assignee_id")
+  assigneeId: uuid("assignee_id")
     .references(() => user.id, { onDelete: "set null" }),
-  aiQaId: text("ai_qa_id")
+  aiQaId: uuid("ai_qa_id")
     .references(() => aiTeamMember.id, { onDelete: "set null" }),
   screenshots: text("screenshots"), // JSON array of screenshot URLs
   environment: text("environment"), // Browser, OS, etc.
@@ -267,11 +267,11 @@ export const bugReport = pgTable("bug_report", {
 
 // AI QA Analysis
 export const aiQaAnalysis = pgTable("ai_qa_analysis", {
-  id: text("id").primaryKey(),
-  bugReportId: text("bug_report_id")
+  id: uuid("id").primaryKey().defaultRandom(),
+  bugReportId: uuid("bug_report_id")
     .notNull()
     .references(() => bugReport.id, { onDelete: "cascade" }),
-  aiQaId: text("ai_qa_id")
+  aiQaId: uuid("ai_qa_id")
     .notNull()
     .references(() => aiTeamMember.id, { onDelete: "cascade" }),
   analysisType: text("analysis_type").notNull().$type<"BUG_ANALYSIS" | "TEST_GENERATION" | "PREDICTION" | "QUALITY_CHECK">(),
@@ -285,13 +285,13 @@ export const aiQaAnalysis = pgTable("ai_qa_analysis", {
 
 // Code Reviews
 export const codeReview = pgTable("code_review", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   pullRequestId: text("pull_request_id").notNull(),
   repositoryId: text("repository_id").notNull(),
-  authorId: text("author_id")
+  authorId: uuid("author_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  aiReviewerId: text("ai_reviewer_id")
+  aiReviewerId: uuid("ai_reviewer_id")
     .notNull()
     .references(() => aiTeamMember.id, { onDelete: "cascade" }),
   status: text("status").notNull().$type<"PENDING" | "IN_PROGRESS" | "APPROVED" | "REJECTED" | "NEEDS_CHANGES">().default("PENDING"),
@@ -312,8 +312,8 @@ export const codeReview = pgTable("code_review", {
 
 // Quality Gates
 export const qualityGate = pgTable("quality_gate", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
@@ -333,8 +333,8 @@ export const qualityGate = pgTable("quality_gate", {
 
 // AI Analytics
 export const aiAnalytics = pgTable("ai_analytics", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),
   analyticsType: text("analytics_type").notNull().$type<"TEAM_PERFORMANCE" | "CODE_QUALITY" | "PRODUCTIVITY" | "BURNOUT_DETECTION" | "COST_OPTIMIZATION">(),
@@ -342,7 +342,7 @@ export const aiAnalytics = pgTable("ai_analytics", {
   insights: text("insights"), // JSON array of insights
   recommendations: text("recommendations"), // JSON array of recommendations
   confidence: integer("confidence").notNull(), // 0-100
-  generatedBy: text("generated_by")
+  generatedBy: uuid("generated_by")
     .notNull()
     .references(() => aiTeamMember.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -350,14 +350,14 @@ export const aiAnalytics = pgTable("ai_analytics", {
 
 // AI Documentation
 export const aiDocumentation = pgTable("ai_documentation", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),
   docType: text("doc_type").notNull().$type<"API_DOCS" | "CODE_COMMENTS" | "USER_GUIDE" | "TECHNICAL_SPEC" | "README">(),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  generatedBy: text("generated_by")
+  generatedBy: uuid("generated_by")
     .notNull()
     .references(() => aiTeamMember.id, { onDelete: "cascade" }),
   autoGenerated: boolean("auto_generated").default(true),

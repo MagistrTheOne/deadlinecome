@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1758818209866,
-      "tag": "0000_quick_energizer",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1758819645749,
-      "tag": "0001_fresh_white_tiger",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1758820270753,
-      "tag": "0002_white_ogun",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1758823014609,
-      "tag": "0003_adorable_captain_stacy",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1758832208752,
-      "tag": "0004_complete_wraith",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1758836671263,
-      "tag": "0005_tearful_jack_power",
+      "when": 1758884446440,
+      "tag": "0000_quick_lightspeed",
       "breakpoints": true
     }
   ]
