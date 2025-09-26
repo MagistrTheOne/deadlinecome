@@ -3,6 +3,7 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { cacheUtils } from '@/lib/cache/redis';
 import { ValidationService } from '@/lib/validation/validator';
+import { DatabaseService } from '@/lib/services/database-service';
 
 // GET /api/dashboard/stats - Получение статистики дашборда
 export async function GET(request: NextRequest) {
@@ -32,17 +33,40 @@ export async function GET(request: NextRequest) {
       return ValidationService.createSuccessResponse(cachedStats);
     }
 
-    // Генерируем статистику (здесь должна быть реальная логика)
+    // Получаем реальные данные из БД
+    const workspaces = await DatabaseService.getWorkspacesByUserId(userId);
+    const projects = await DatabaseService.getProjectsByWorkspaceId(workspaceId || workspaces[0]?.workspace.id || '');
+    
+    let totalTasks = 0;
+    let completedTasks = 0;
+    let inProgressTasks = 0;
+    let pendingTasks = 0;
+    let aiActions = 0;
+
+    // Считаем статистику по задачам для каждого проекта
+    for (const project of projects) {
+      const issues = await DatabaseService.getIssuesByProjectId(project.project.id);
+      
+      totalTasks += issues.length;
+      completedTasks += issues.filter(issue => issue.issue.status === 'DONE').length;
+      inProgressTasks += issues.filter(issue => issue.issue.status === 'IN_PROGRESS').length;
+      pendingTasks += issues.filter(issue => issue.issue.status === 'TODO').length;
+      
+      // Получаем AI действия
+      const vasilyActions = await DatabaseService.getVasilyActions(project.project.id);
+      aiActions += vasilyActions.length;
+    }
+
     const stats = {
       overview: {
-        totalProjects: 12,
-        activeProjects: 8,
-        completedProjects: 4,
-        totalTasks: 156,
-        completedTasks: 89,
-        pendingTasks: 67,
-        teamMembers: 24,
-        activeUsers: 18
+        totalProjects: projects.length,
+        activeProjects: projects.length,
+        completedProjects: 0, // TODO: добавить поле completed в схему проекта
+        totalTasks,
+        completedTasks,
+        pendingTasks: pendingTasks + inProgressTasks,
+        teamMembers: workspaces.length,
+        activeUsers: workspaces.length // TODO: добавить проверку статуса пользователей
       },
       recentActivity: [
         {
