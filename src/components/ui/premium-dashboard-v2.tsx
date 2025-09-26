@@ -47,6 +47,8 @@ import GamificationDashboard from "@/components/ui/gamification-dashboard";
 import AICodeGenerator from "@/components/ui/ai-code-generator";
 import AIProjectPredictor from "@/components/ui/ai-project-predictor";
 import AIDesignSystem from "@/components/ui/ai-design-system";
+import { CompactChat } from "@/components/ui/compact-chat";
+import { EnhancedNavigation } from "@/components/ui/enhanced-navigation";
 
 interface DashboardSection {
   id: string;
@@ -64,6 +66,8 @@ export default function PremiumDashboardV2() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(3);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMinimized, setChatMinimized] = useState(false);
 
   const dashboardSections: DashboardSection[] = [
     {
@@ -408,6 +412,21 @@ export default function PremiumDashboardV2() {
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      {/* Enhanced Navigation */}
+      <EnhancedNavigation
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(false)}
+        onChatToggle={() => setChatOpen(!chatOpen)}
+        onChatMinimize={() => setChatMinimized(!chatMinimized)}
+      />
+
+      {/* Compact Chat */}
+      <CompactChat
+        isOpen={chatOpen && !chatMinimized}
+        onToggle={() => setChatOpen(!chatOpen)}
+        onMinimize={() => setChatMinimized(true)}
+      />
     </div>
   );
 }

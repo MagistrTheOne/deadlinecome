@@ -3,9 +3,21 @@ import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core"
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  username: text("username").unique(), // Никнейм пользователя
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
-  image: text("image"),
+  image: text("image"), // Аватар пользователя
+  status: text("status").$type<"ONLINE" | "OFFLINE" | "BUSY" | "AWAY">().default("OFFLINE"), // Статус пользователя
+  statusMessage: text("status_message"), // Сообщение статуса
+  bio: text("bio"), // Биография пользователя
+  location: text("location"), // Местоположение
+  website: text("website"), // Веб-сайт
+  timezone: text("timezone").default("UTC"), // Часовой пояс
+  language: text("language").default("ru"), // Язык интерфейса
+  theme: text("theme").$type<"LIGHT" | "DARK" | "AUTO">().default("DARK"), // Тема интерфейса
+  notifications: text("notifications"), // JSON настройки уведомлений
+  preferences: text("preferences"), // JSON пользовательские настройки
+  lastActive: timestamp("last_active").defaultNow(), // Последняя активность
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .$onUpdate(() => new Date())

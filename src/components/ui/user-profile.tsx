@@ -79,6 +79,16 @@ export function UserProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    username: "",
+    bio: "",
+    location: "",
+    website: "",
+    status: "ONLINE" as "ONLINE" | "OFFLINE" | "BUSY" | "AWAY",
+    statusMessage: ""
+  });
 
   // Fallback demo данные
   const demoProfile: UserProfile = {
@@ -216,6 +226,62 @@ export function UserProfile() {
     }
   };
 
+  const handleEdit = () => {
+    if (profile) {
+      setEditForm({
+        name: profile.name,
+        username: profile.name, // Используем name как username для демо
+        bio: "Full-Stack Developer & AI Engineer",
+        location: "Moscow, Russia",
+        website: "https://github.com/MagistrTheOne",
+        status: "ONLINE",
+        statusMessage: "Готов к работе!"
+      });
+      setIsEditing(true);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(prev => prev ? { ...prev, ...data.user } : null);
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await fetch('/api/user/avatar', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(prev => prev ? { ...prev, avatar: data.avatar } : null);
+      }
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "TODO":
@@ -314,6 +380,14 @@ export function UserProfile() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={handleEdit}
+                className="text-white/60 hover:text-white"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 className="text-white/60 hover:text-white"
               >
                 <Settings className="h-4 w-4" />
@@ -338,6 +412,16 @@ export function UserProfile() {
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-white mb-1">{profile.name}</h2>
               <p className="text-white/60 mb-2">{profile.email}</p>
+              
+              {/* Статус пользователя */}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-white/80 text-sm">Онлайн</span>
+                  <span className="text-white/60 text-sm">• Готов к работе!</span>
+                </div>
+              </div>
+              
               <div className="flex items-center gap-2 mb-3">
                 <Badge className="bg-white/10 text-white border-white/20">
                   {profile.role.name}

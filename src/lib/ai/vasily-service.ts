@@ -1,5 +1,6 @@
 import { AIService } from "./ai-service";
 import { VasilyPersonality } from "./vasily-personality";
+import { gigaChatService } from "./gigachat";
 
 export interface VasilyResponse {
   response: string;
@@ -9,6 +10,8 @@ export interface VasilyResponse {
   suggestions?: string[];
   isProjectRelated: boolean;
   memoryUsed?: boolean;
+  message?: string;
+  actions?: string[];
 }
 
 export class VasilyService {
@@ -315,5 +318,145 @@ export class VasilyService {
         // Если команда не распознана, обрабатываем как обычное сообщение
         return this.chat(command);
     }
+  }
+
+  /**
+   * Генерация ответа для чата с GigaChat
+   */
+  static async generateResponse(params: {
+    message: string;
+    context: Array<{ query: string; response: string; timestamp: Date }>;
+    workspaceId?: string;
+    projectId?: string;
+    userId: string;
+  }): Promise<VasilyResponse> {
+    try {
+      const { message, context, workspaceId, projectId, userId } = params;
+
+      // Обновляем настроение на основе контекста
+      const mood = VasilyPersonality.updateMoodBasedOnContext({
+        timeOfDay: new Date().getHours(),
+        userActivity: 'chat',
+        lastInteraction: new Date()
+      });
+
+      // Проверяем, связан ли вопрос с проектами
+      const isProjectRelated = this.isProjectRelated(message);
+      
+      // Получаем релевантные воспоминания
+      const relevantMemories = VasilyPersonality.getRelevantMemories(message, 2);
+      
+      // Подготавливаем контекст для GigaChat
+      const contextStrings = context.map(conv => conv.query);
+      
+      // Получаем ответ от GigaChat
+      const gigaChatMessages = gigaChatService.createVasilyContext(message, contextStrings);
+      const aiResponse = await gigaChatService.sendMessage(gigaChatMessages);
+
+      // Сохраняем в память
+      VasilyPersonality.addMemory({
+        type: "conversation",
+        content: message,
+        importance: 5
+      });
+
+      // Генерируем предложения
+      const suggestions = this.generateSuggestions(message, isProjectRelated);
+      
+      // Генерируем возможные действия
+      const actions = this.generateActions(message, isProjectRelated);
+
+      return {
+        message: aiResponse,
+        response: aiResponse,
+        mood: mood.name,
+        emoji: mood.emoji,
+        statusMessage: mood.statusMessage,
+        suggestions,
+        isProjectRelated,
+        memoryUsed: relevantMemories.length > 0,
+        actions
+      };
+
+    } catch (error) {
+      console.error("Error generating Vasily response:", error);
+      
+      // Fallback на локальный AI если GigaChat недоступен
+      try {
+        const fallbackResponse = await this.generateFallbackResponse(params.message, params.context);
+        return fallbackResponse;
+      } catch (fallbackError) {
+        console.error("Fallback AI also failed:", fallbackError);
+        return {
+          message: "Извините, произошла ошибка. Попробуйте еще раз.",
+          response: "Извините, произошла ошибка. Попробуйте еще раз.",
+          mood: "confused",
+          emoji: "😕",
+          statusMessage: "Технические проблемы",
+          suggestions: ["Попробуйте переформулировать вопрос", "Обратитесь к администратору"],
+          isProjectRelated: false,
+          memoryUsed: false,
+          actions: []
+        };
+      }
+    }
+  }
+
+  /**
+   * Fallback ответ при недоступности GigaChat
+   */
+  private static async generateFallbackResponse(
+    message: string, 
+    context: Array<{ query: string; response: string; timestamp: Date }>
+  ): Promise<VasilyResponse> {
+    // Используем локальный AI как fallback
+    const mood = VasilyPersonality.getCurrentMood();
+    const isProjectRelated = this.isProjectRelated(message);
+    
+    const systemPrompt = this.buildSystemPrompt(mood, isProjectRelated, []);
+    const contextMessages = context.flatMap(conv => [
+      { role: "user" as const, content: conv.query },
+      { role: "assistant" as const, content: conv.response }
+    ]);
+
+    const aiResponse = await AIService.chat([
+      { role: "system", content: systemPrompt },
+      ...contextMessages,
+      { role: "user", content: message }
+    ]);
+
+    return {
+      message: aiResponse,
+      response: aiResponse,
+      mood: mood.name,
+      emoji: mood.emoji,
+      statusMessage: mood.statusMessage,
+      suggestions: this.generateSuggestions(message, isProjectRelated),
+      isProjectRelated,
+      memoryUsed: false,
+      actions: this.generateActions(message, isProjectRelated)
+    };
+  }
+
+
+  /**
+   * Генерация возможных действий
+   */
+  private static generateActions(message: string, isProjectRelated: boolean): string[] {
+    const actions: string[] = [];
+    
+    if (isProjectRelated) {
+      actions.push("view_project", "create_task", "assign_task");
+    }
+    
+    if (message.toLowerCase().includes('аналитика') || message.toLowerCase().includes('analytics')) {
+      actions.push("view_analytics", "generate_report");
+    }
+    
+    if (message.toLowerCase().includes('команда') || message.toLowerCase().includes('team')) {
+      actions.push("view_team", "invite_member");
+    }
+    
+    return actions;
   }
 }

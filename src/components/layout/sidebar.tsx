@@ -17,7 +17,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
-  FolderOpen
+  FolderOpen,
+  Brain,
+  Zap,
+  Sparkles,
+  MessageSquare,
+  Bell,
+  Search
 } from "lucide-react";
 
 interface SidebarProps {
@@ -34,9 +40,15 @@ const navigationItems = [
     badge: null,
   },
   {
+    name: "Доски задач",
+    href: "/boards",
+    icon: FolderKanban,
+    badge: "NEW",
+  },
+  {
     name: "Проекты",
     href: "/projects",
-    icon: FolderKanban,
+    icon: FolderOpen,
     badge: null,
   },
   {
@@ -62,6 +74,44 @@ const navigationItems = [
     href: "/analytics",
     icon: BarChart3,
     badge: null,
+  },
+];
+
+const aiFeatures = [
+  {
+    name: "Василий AI",
+    href: "/ai/vasily",
+    icon: Brain,
+    badge: "NEW",
+    isNew: true,
+  },
+  {
+    name: "AI Генератор",
+    href: "/ai/generator",
+    icon: Zap,
+    badge: "PRO",
+    isPro: true,
+  },
+  {
+    name: "AI Дизайн-система",
+    href: "/ai/design",
+    icon: Sparkles,
+    badge: "PRO",
+    isPro: true,
+  },
+  {
+    name: "AI Команда",
+    href: "/ai/team",
+    icon: Users,
+    badge: "NEW",
+    isNew: true,
+  },
+  {
+    name: "AI Аналитика",
+    href: "/ai/analytics",
+    icon: BarChart3,
+    badge: "PRO",
+    isPro: true,
   },
 ];
 
@@ -169,6 +219,45 @@ export function Sidebar({ isOpen = true, onClose, className }: SidebarProps) {
                     </div>
                     {!collapsed && item.badge && (
                       <Badge className="bg-red-500/20 text-red-400 border border-red-500/30 text-xs">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* AI Фичи */}
+            <div className="space-y-1 pt-4">
+              {!collapsed && (
+                <div className="px-3 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">
+                  AI Фичи
+                </div>
+              )}
+              {aiFeatures.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-transparent group",
+                      isActive
+                        ? "bg-white/10 text-white border-white/20"
+                        : "text-white/80 hover:text-white hover:bg-white/10 hover:border-white/10"
+                    )}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {!collapsed && <span>{item.name}</span>}
+                    </div>
+                    {!collapsed && item.badge && (
+                      <Badge className={cn(
+                        "text-xs",
+                        item.isNew ? "bg-green-500/20 text-green-400 border-green-500/30" :
+                        item.isPro ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
+                        "bg-white/10 text-white border-white/20"
+                      )}>
                         {item.badge}
                       </Badge>
                     )}
