@@ -261,6 +261,67 @@ export class BoardService {
   }
 
   /**
+   * Создать колонку доски
+   */
+  static async createBoardColumn(data: {
+    boardId: string;
+    name: string;
+    status: string;
+    color?: string;
+    order: number;
+    isDone?: boolean;
+    isWip?: boolean;
+    wipLimit?: number;
+  }): Promise<BoardColumn> {
+    try {
+      const [newColumn] = await db
+        .insert(boardColumn)
+        .values({
+          boardId: data.boardId,
+          name: data.name,
+          status: data.status,
+          color: data.color,
+          order: data.order,
+          isDone: data.isDone || false,
+          isWip: data.isWip || false,
+          wipLimit: data.wipLimit || null
+        })
+        .returning();
+
+      LoggerService.logUserAction('board-column-created', 'system', {
+        columnId: newColumn.id,
+        boardId: data.boardId,
+        name: newColumn.name
+      });
+
+      return newColumn;
+
+    } catch (error) {
+      LoggerService.logError(error as Error, 'board-service', 'createBoardColumn');
+      throw error;
+    }
+  }
+
+  /**
+   * Получить колонку по ID
+   */
+  static async getBoardColumnById(columnId: string): Promise<BoardColumn | null> {
+    try {
+      const [column] = await db
+        .select()
+        .from(boardColumn)
+        .where(eq(boardColumn.id, columnId))
+        .limit(1);
+
+      return column || null;
+
+    } catch (error) {
+      LoggerService.logError(error as Error, 'board-service', 'getBoardColumnById');
+      throw error;
+    }
+  }
+
+  /**
    * Обновить колонку доски
    */
   static async updateBoardColumn(columnId: string, data: Partial<NewBoardColumn>): Promise<BoardColumn> {
@@ -271,10 +332,57 @@ export class BoardService {
         .where(eq(boardColumn.id, columnId))
         .returning();
 
+      LoggerService.logUserAction('board-column-updated', 'system', {
+        columnId,
+        changes: data
+      });
+
       return updatedColumn;
 
     } catch (error) {
       LoggerService.logError(error as Error, 'board-service', 'updateBoardColumn');
+      throw error;
+    }
+  }
+
+  /**
+   * Удалить колонку доски
+   */
+  static async deleteBoardColumn(columnId: string): Promise<boolean> {
+    try {
+      await db.delete(boardColumn).where(eq(boardColumn.id, columnId));
+
+      LoggerService.logUserAction('board-column-deleted', 'system', { columnId });
+
+      return true;
+
+    } catch (error) {
+      LoggerService.logError(error as Error, 'board-service', 'deleteBoardColumn');
+      throw error;
+    }
+  }
+
+  /**
+   * Переупорядочить колонки доски
+   */
+  static async reorderBoardColumns(boardId: string, columnOrders: Array<{ columnId: string; order: number }>): Promise<boolean> {
+    try {
+      for (const { columnId, order } of columnOrders) {
+        await db
+          .update(boardColumn)
+          .set({ order, updatedAt: new Date() })
+          .where(and(eq(boardColumn.id, columnId), eq(boardColumn.boardId, boardId)));
+      }
+
+      LoggerService.logUserAction('board-columns-reordered', 'system', {
+        boardId,
+        columnOrders
+      });
+
+      return true;
+
+    } catch (error) {
+      LoggerService.logError(error as Error, 'board-service', 'reorderBoardColumns');
       throw error;
     }
   }
