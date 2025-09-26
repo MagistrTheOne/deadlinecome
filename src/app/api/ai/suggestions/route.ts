@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { issue, project, aiTaskSuggestion } from "@/lib/db/schema";
 import { OpenAIService } from "@/lib/ai/openai-service";
 import { eq } from "drizzle-orm";
 
+import { requireAuth } from "@/lib/auth/guards";
+
 export async function POST(request: NextRequest) {
   try {
     // Проверка аутентификации
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const { workspaceId, projectId } = await request.json();
 
@@ -104,13 +99,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Проверка аутентификации
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const { searchParams } = new URL(request.url);
     const workspaceId = searchParams.get("workspaceId");

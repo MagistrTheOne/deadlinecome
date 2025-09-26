@@ -5,6 +5,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { aiTeamManager, AISpecialistType } from '@/lib/ai/core/ai-team-manager';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // POST /api/ai/team-chat - Universal chat with any AI specialist
 export const POST = withValidation(schemas.aiTeamChat, async (data, request) => {
   try {
@@ -14,10 +16,7 @@ export const POST = withValidation(schemas.aiTeamChat, async (data, request) => 
       return rateLimitResult.response!;
     }
 
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     // Validate specialist exists and is available
     const specialist = aiTeamManager.getSpecialist(data.specialist as AISpecialistType);
@@ -34,7 +33,7 @@ export const POST = withValidation(schemas.aiTeamChat, async (data, request) => 
       message: data.message,
       specialist: data.specialist as AISpecialistType,
       context: {
-        userId,
+        session.user.id,
         workspaceId: data.workspaceId,
         projectId: data.projectId,
         timeOfDay: new Date().getHours(),
@@ -48,7 +47,7 @@ export const POST = withValidation(schemas.aiTeamChat, async (data, request) => 
       responseLength: response.message.length,
       suggestionsCount: response.suggestions?.length || 0,
       actionsCount: response.actions?.length || 0
-    }, userId);
+    }, session.user.id);
 
     return ValidationService.createSuccessResponse(response);
 
@@ -79,10 +78,7 @@ export async function GET(request: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     // Get all specialists info
     const allSpecialists = aiTeamManager.getAllSpecialists();
@@ -98,7 +94,7 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    LoggerService.logUserAction('ai-specialists-viewed', userId, {
+    LoggerService.logUserAction('ai-specialists-viewed', session.user.id, {
       totalCount: allSpecialists.length,
       availableCount: availableSpecialists.length
     });

@@ -5,6 +5,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { cacheUtils } from '@/lib/cache/redis';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // POST /api/vasily/chat - Чат с AI ассистентом Василием
 export const POST = withValidation(schemas.aiChat, async (data, request) => {
   try {
@@ -14,16 +16,13 @@ export const POST = withValidation(schemas.aiChat, async (data, request) => {
       return rateLimitResult.response!;
     }
 
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     // Проверяем кэш для похожих запросов
-    const cacheKey = `ai:chat:${userId}:${Buffer.from(data.message).toString('base64').slice(0, 20)}`;
+    const cacheKey = `ai:chat:${session.user.id}:${Buffer.from(data.message).toString('base64').slice(0, 20)}`;
     const cachedResponse = await cacheUtils.getApiResponse('vasily-chat', {
       message: data.message,
-      userId,
+      session.user.id,
       workspaceId: data.workspaceId,
       projectId: data.projectId
     });
@@ -65,7 +64,7 @@ export const POST = withValidation(schemas.aiChat, async (data, request) => {
     // Кэшируем ответ на 5 минут
     await cacheUtils.cacheApiResponse('vasily-chat', {
       message: data.message,
-      userId,
+      session.user.id,
       workspaceId: data.workspaceId,
       projectId: data.projectId
     }, vasilyResponse, 300);
@@ -76,7 +75,7 @@ export const POST = withValidation(schemas.aiChat, async (data, request) => {
       responseLength: vasilyResponse.message.length,
       suggestionsCount: vasilyResponse.suggestions.length,
       actionsCount: vasilyResponse.actions.length
-    }, userId);
+    }, session.user.id);
 
     return ValidationService.createSuccessResponse(vasilyResponse);
 

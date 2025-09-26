@@ -4,6 +4,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/boards/[boardId]/columns/[columnId] - Получить колонку
 export async function GET(
   request: NextRequest,
@@ -17,11 +19,7 @@ export async function GET(
     }
 
     const { columnId } = await params;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     const column = await BoardService.getBoardColumnById(columnId);
 
@@ -29,7 +27,7 @@ export async function GET(
       return ValidationService.createErrorResponse('Column not found', 404);
     }
 
-    LoggerService.logUserAction('board-column-viewed', userId, { columnId });
+    LoggerService.logUserAction('board-column-viewed', session.user.id, { columnId });
 
     return ValidationService.createSuccessResponse(column);
 
@@ -53,15 +51,11 @@ export async function PUT(
 
     const { columnId } = await params;
     const body = await request.json();
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     const updatedColumn = await BoardService.updateBoardColumn(columnId, body);
 
-    LoggerService.logUserAction('board-column-updated', userId, {
+    LoggerService.logUserAction('board-column-updated', session.user.id, {
       columnId,
       changes: body
     });
@@ -87,15 +81,11 @@ export async function DELETE(
     }
 
     const { columnId } = await params;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     await BoardService.deleteBoardColumn(columnId);
 
-    LoggerService.logUserAction('board-column-deleted', userId, { columnId });
+    LoggerService.logUserAction('board-column-deleted', session.user.id, { columnId });
 
     return ValidationService.createSuccessResponse({ success: true });
 

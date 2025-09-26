@@ -4,6 +4,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/boards/templates - Получить шаблоны досок
 export async function GET(request: NextRequest) {
   try {
@@ -15,15 +17,11 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     const templates = await BoardService.getBoardTemplates(type || undefined);
 
-    LoggerService.logUserAction('board-templates-fetched', userId, { 
+    LoggerService.logUserAction('board-templates-fetched', session.user.id, { 
       count: templates.length,
       type 
     });
@@ -47,11 +45,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { name, description, type, template, isPublic } = body;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     if (!name || !type || !template) {
       return ValidationService.createErrorResponse('Missing required fields', 400);
@@ -62,11 +56,11 @@ export async function POST(request: NextRequest) {
       description,
       type,
       template,
-      createdById: userId,
+      createdById: session.user.id,
       isPublic
     });
 
-    LoggerService.logUserAction('board-template-created', userId, {
+    LoggerService.logUserAction('board-template-created', session.user.id, {
       templateId: newTemplate.id,
       name: newTemplate.name,
       type: newTemplate.type

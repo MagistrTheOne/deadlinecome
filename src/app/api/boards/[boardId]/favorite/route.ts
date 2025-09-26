@@ -4,6 +4,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // POST /api/boards/[boardId]/favorite - Добавить доску в избранное
 export async function POST(
   request: NextRequest,
@@ -17,15 +19,11 @@ export async function POST(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
+    const session = await requireAuth(request);
 
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    await BoardService.addToFavorites(boardId, session.user.id);
 
-    await BoardService.addToFavorites(boardId, userId);
-
-    LoggerService.logUserAction('board-favorited', userId, { boardId });
+    LoggerService.logUserAction('board-favorited', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse({ success: true });
 
@@ -48,15 +46,11 @@ export async function DELETE(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
+    const session = await requireAuth(request);
 
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    await BoardService.removeFromFavorites(boardId, session.user.id);
 
-    await BoardService.removeFromFavorites(boardId, userId);
-
-    LoggerService.logUserAction('board-unfavorited', userId, { boardId });
+    LoggerService.logUserAction('board-unfavorited', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse({ success: true });
 

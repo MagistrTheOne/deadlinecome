@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { issue } from "@/lib/db/schema";
 import { eq, gte, and } from "drizzle-orm";
 
+import { requireAuth } from "@/lib/auth/guards";
+
 export async function GET(request: NextRequest) {
   try {
     // Проверка аутентификации
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     // Получаем данные за последние 7 дней
     const now = new Date();

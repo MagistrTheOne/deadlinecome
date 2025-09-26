@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/guards";
 
 interface TodoItem {
   id: string;
@@ -89,6 +90,7 @@ const demoTasks: TodoItem[] = [
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await requireAuth(request);
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get("projectId");
 
@@ -109,6 +111,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await requireAuth(request);
     const body = await request.json();
     const { title, description, priority, assigneeId, dueDate, projectId, status } = body;
 
@@ -142,6 +145,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const session = await requireAuth(request);
     const body = await request.json();
     const { taskId, status, priority, assigneeId } = body;
 
@@ -175,6 +179,7 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await requireAuth(request);
     const { searchParams } = new URL(request.url);
     const taskId = searchParams.get("taskId");
 

@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { VasilyService } from "@/lib/ai/vasily-service";
+
+import { requireAuth } from "@/lib/auth/guards";
 
 export async function GET(request: NextRequest) {
   try {
     // Проверка аутентификации
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     // Получаем текущий статус Василия
     const status = VasilyService.getStatus();
@@ -29,13 +24,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Проверка аутентификации
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const { mood } = await request.json();
 

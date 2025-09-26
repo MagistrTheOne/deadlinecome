@@ -1,5 +1,5 @@
-import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/guards";
 import { db } from "@/lib/db";
 import { aiTeamMember, aiAnalytics } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -13,13 +13,7 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     // Используем идемпотентность для создания аналитики
     return await handleIdempotentPost(request, async () => {
@@ -65,7 +59,14 @@ export async function POST(request: NextRequest) {
       // Отправляем уведомление через WebSocket
       const wsManager = getWebSocketManager();
       if (wsManager) {
-        wsManager.notifyAnalyticsUpdate(projectId, newAnalytics[0]);
+        wsManager.broadcast({
+          type: 'analytics-update',
+          data: {
+            projectId,
+            analytics: newAnalytics[0]
+          },
+          timestamp: Date.now()
+        });
       }
 
       return {
@@ -82,13 +83,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get("projectId");

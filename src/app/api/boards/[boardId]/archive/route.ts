@@ -4,6 +4,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // POST /api/boards/[boardId]/archive - Архивировать доску
 export async function POST(
   request: NextRequest,
@@ -17,15 +19,11 @@ export async function POST(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
+    const session = await requireAuth(request);
 
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const archivedBoard = await BoardService.archiveBoard(boardId, session.user.id);
 
-    const archivedBoard = await BoardService.archiveBoard(boardId, userId);
-
-    LoggerService.logUserAction('board-archived', userId, { boardId });
+    LoggerService.logUserAction('board-archived', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse(archivedBoard);
 
@@ -48,15 +46,11 @@ export async function PUT(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
+    const session = await requireAuth(request);
 
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const restoredBoard = await BoardService.restoreBoard(boardId, session.user.id);
 
-    const restoredBoard = await BoardService.restoreBoard(boardId, userId);
-
-    LoggerService.logUserAction('board-restored', userId, { boardId });
+    LoggerService.logUserAction('board-restored', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse(restoredBoard);
 

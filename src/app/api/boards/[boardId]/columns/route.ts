@@ -4,6 +4,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/boards/[boardId]/columns - Получить колонки доски
 export async function GET(
   request: NextRequest,
@@ -17,15 +19,11 @@ export async function GET(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     const columns = await BoardService.getBoardColumns(boardId);
 
-    LoggerService.logUserAction('board-columns-fetched', userId, { boardId });
+    LoggerService.logUserAction('board-columns-fetched', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse(columns);
 
@@ -50,11 +48,7 @@ export async function POST(
     const { boardId } = await params;
     const body = await request.json();
     const { name, status, color, isDone, isWip, wipLimit } = body;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     if (!name || !status) {
       return ValidationService.createErrorResponse('Missing required fields', 400);
@@ -77,7 +71,7 @@ export async function POST(
       wipLimit: wipLimit || null
     });
 
-    LoggerService.logUserAction('board-column-created', userId, {
+    LoggerService.logUserAction('board-column-created', session.user.id, {
       boardId,
       columnId: newColumn.id,
       name: newColumn.name

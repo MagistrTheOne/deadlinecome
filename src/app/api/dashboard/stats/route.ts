@@ -6,6 +6,8 @@ import { ValidationService } from '@/lib/validation/validator';
 import { DatabaseService } from '@/lib/services/database-service';
 import { createCachedResponse } from '@/lib/api/cache-utils';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/dashboard/stats - Получение статистики дашборда
 export async function GET(request: NextRequest) {
   try {
@@ -15,17 +17,13 @@ export async function GET(request: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const userId = request.headers.get('x-user-id');
+    const session = await requireAuth(request);
     const workspaceId = request.nextUrl.searchParams.get('workspaceId');
-    
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
 
     // Проверяем кэш
-    const cacheKey = `dashboard:stats:${userId}:${workspaceId || 'all'}`;
+    const cacheKey = `dashboard:stats:${session.user.id}:${workspaceId || 'all'}`;
     const cachedStats = await cacheUtils.getApiResponse('dashboard-stats', {
-      userId,
+      userId: session.user.id,
       workspaceId
     });
 
@@ -39,7 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Получаем реальные данные из БД
-    const workspaces = await DatabaseService.getWorkspacesByUserId(userId);
+    const workspaces = await DatabaseService.getWorkspacesByUserId(session.user.id);
     const projects = await DatabaseService.getProjectsByWorkspaceId(workspaceId || workspaces[0]?.workspace.id || '');
     
     let totalTasks = 0;
@@ -166,18 +164,20 @@ export async function GET(request: NextRequest) {
 
     // Кэшируем на 5 минут
     await cacheUtils.cacheApiResponse('dashboard-stats', {
-      userId,
+      userId: session.user.id,
       workspaceId
     }, stats, 300);
 
     LoggerService.logCache('SET', cacheKey, false);
-    LoggerService.logUserAction('dashboard_view', userId, { workspaceId });
+    LoggerService.logUserAction('dashboard_view', session.user.id, { workspaceId });
 
     // Кэшируем на 5 минут и возвращаем с ETag
-    await cacheUtils.cacheApiResponse('dashboard-stats', {
-      userId,
-      workspaceId
-    }, stats, 300);
+    await cacheUtils.cacheApiResponse(
+      'dashboard-stats',
+      { userId: session.user.id, workspaceId },
+      stats,
+      300
+    );
 
     return createCachedResponse(stats, request, {
       maxAge: 60, // 1 minute cache

@@ -4,6 +4,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/boards/[boardId] - Получить доску по ID
 export async function GET(
   request: NextRequest,
@@ -17,11 +19,7 @@ export async function GET(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     const board = await BoardService.getBoardById(boardId);
     
@@ -35,7 +33,7 @@ export async function GET(
     // Получаем статистику доски
     const stats = await BoardService.getBoardStats(boardId);
 
-    LoggerService.logUserAction('board-viewed', userId, { boardId });
+    LoggerService.logUserAction('board-viewed', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse({
       ...board,
@@ -63,15 +61,11 @@ export async function PUT(
 
     const { boardId } = await params;
     const body = await request.json();
-    const userId = request.headers.get('x-user-id');
+    const session = await requireAuth(request);
 
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const updatedBoard = await BoardService.updateBoard(boardId, body, session.user.id);
 
-    const updatedBoard = await BoardService.updateBoard(boardId, body, userId);
-
-    LoggerService.logUserAction('board-updated', userId, {
+    LoggerService.logUserAction('board-updated', session.user.id, {
       boardId,
       changes: body
     });
@@ -97,15 +91,11 @@ export async function DELETE(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
+    const session = await requireAuth(request);
 
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    await BoardService.deleteBoard(boardId, session.user.id);
 
-    await BoardService.deleteBoard(boardId, userId);
-
-    LoggerService.logUserAction('board-deleted', userId, { boardId });
+    LoggerService.logUserAction('board-deleted', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse({ success: true });
 

@@ -2,15 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { WorkspaceService } from "@/lib/api/workspaces";
 
+import { requireAuth } from "@/lib/auth/guards";
+
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const workspaces = await WorkspaceService.getWorkspaces(session.user.id);
     return NextResponse.json(workspaces);
@@ -22,13 +18,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const data = await request.json();
     const workspace = await WorkspaceService.createWorkspace(data, session.user.id);

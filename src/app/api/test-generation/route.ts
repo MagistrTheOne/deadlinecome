@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { aiTeamMember } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getWebSocketManager } from "@/lib/websocket-server";
 
+import { requireAuth } from "@/lib/auth/guards";
+
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const {
       projectId,
@@ -93,16 +88,16 @@ function generateUnitTests(language: string, framework: string) {
         code: `describe('UserService', () => {
   it('should return user data when valid ID provided', async () => {
     // Arrange
-    const userId = '123';
+    const session.user.id = '123';
     const expectedUser = { id: '123', name: 'John Doe', email: 'john@example.com' };
     jest.spyOn(userRepository, 'findById').mockResolvedValue(expectedUser);
     
     // Act
-    const result = await userService.getUserById(userId);
+    const result = await userService.getUserById(session.user.id);
     
     // Assert
     expect(result).toEqual(expectedUser);
-    expect(userRepository.findById).toHaveBeenCalledWith(userId);
+    expect(userRepository.findById).toHaveBeenCalledWith(session.user.id);
   });
 });`,
         coverage: "95%",
@@ -115,11 +110,11 @@ function generateUnitTests(language: string, framework: string) {
         code: `describe('UserService', () => {
   it('should throw error when user not found', async () => {
     // Arrange
-    const userId = '999';
+    const session.user.id = '999';
     jest.spyOn(userRepository, 'findById').mockResolvedValue(null);
     
     // Act & Assert
-    await expect(userService.getUserById(userId))
+    await expect(userService.getUserById(session.user.id))
       .rejects
       .toThrow('User not found');
   });

@@ -5,6 +5,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { cacheUtils } from '@/lib/cache/redis';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/user/profile - Получение профиля пользователя
 export async function GET(request: NextRequest) {
   try {
@@ -14,21 +16,18 @@ export async function GET(request: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     // Пытаемся получить из кэша
-    const cachedProfile = await cacheUtils.getUserData(userId);
+    const cachedProfile = await cacheUtils.getUserData(session.user.id);
     if (cachedProfile) {
-      LoggerService.logCache('GET', `user:${userId}`, true);
+      LoggerService.logCache('GET', `user:${session.user.id}`, true);
       return ValidationService.createSuccessResponse(cachedProfile);
     }
 
     // Получаем данные из БД (здесь должна быть реальная логика)
     const profile = {
-      id: userId,
+      id: session.user.id,
       name: 'John Doe',
       email: 'john@example.com',
       username: 'johndoe',
@@ -44,10 +43,10 @@ export async function GET(request: NextRequest) {
     };
 
     // Кэшируем на 1 час
-    await cacheUtils.cacheUserData(userId, profile, 3600);
-    LoggerService.logCache('SET', `user:${userId}`, false);
+    await cacheUtils.cacheUserData(session.user.id, profile, 3600);
+    LoggerService.logCache('SET', `user:${session.user.id}`, false);
 
-    LoggerService.logUserAction('profile_view', userId);
+    LoggerService.logUserAction('profile_view', session.user.id);
     return ValidationService.createSuccessResponse(profile);
 
   } catch (error) {
@@ -65,23 +64,20 @@ export const PUT = withValidation(schemas.userUpdate, async (data, request) => {
       return rateLimitResult.response!;
     }
 
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     // Обновляем профиль в БД (здесь должна быть реальная логика)
     const updatedProfile = {
-      id: userId,
+      id: session.user.id,
       ...data,
       updatedAt: new Date().toISOString()
     };
 
     // Инвалидируем кэш
-    await cacheUtils.invalidatePattern(`user:${userId}*`);
-    LoggerService.logCache('DELETE', `user:${userId}`, false);
+    await cacheUtils.invalidatePattern(`user:${session.user.id}*`);
+    LoggerService.logCache('DELETE', `user:${session.user.id}`, false);
 
-    LoggerService.logUserAction('profile_update', userId, { fields: Object.keys(data) });
+    LoggerService.logUserAction('profile_update', session.user.id, { fields: Object.keys(data) });
     return ValidationService.createSuccessResponse(updatedProfile, 'Profile updated successfully');
 
   } catch (error) {

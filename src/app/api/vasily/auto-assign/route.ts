@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { issue, workspaceMember, vasilyAction } from "@/lib/db/schema";
 import { eq, and, isNull } from "drizzle-orm";
 import { getWebSocketManager } from "@/lib/websocket-server";
 
+import { requireAuth } from "@/lib/auth/guards";
+
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const { projectId, taskId } = await request.json();
 
@@ -48,7 +43,7 @@ export async function POST(request: NextRequest) {
         await db
           .update(issue)
           .set({
-            assigneeId: bestAssignee.userId,
+            assigneeId: bestAssignee.session.user.id,
             updatedAt: new Date(),
           })
           .where(eq(issue.id, task.id));
@@ -59,7 +54,7 @@ export async function POST(request: NextRequest) {
           projectId,
           actionType: "TASK_ASSIGNED",
           description: `Василий назначил задачу "${task.title}" на ${bestAssignee.itRole}`,
-          targetUserId: bestAssignee.userId,
+          targetUserId: bestAssignee.session.user.id,
           metadata: JSON.stringify({
             taskId: task.id,
             taskTitle: task.title,
@@ -74,7 +69,7 @@ export async function POST(request: NextRequest) {
           wsManager.notifyVasilyAction(projectId, action[0]);
           wsManager.notifyTaskUpdate(projectId, {
             ...task,
-            assigneeId: bestAssignee.userId,
+            assigneeId: bestAssignee.session.user.id,
             assigneeName: bestAssignee.itRole,
           });
         }
@@ -82,7 +77,7 @@ export async function POST(request: NextRequest) {
         assignments.push({
           taskId: task.id,
           taskTitle: task.title,
-          assigneeId: bestAssignee.userId,
+          assigneeId: bestAssignee.session.user.id,
           assigneeRole: bestAssignee.itRole,
           reasoning: bestAssignee.reasoning,
         });

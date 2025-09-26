@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { issue, project } from "@/lib/db/schema";
 import { AIService } from "@/lib/ai/ai-service";
 import { eq } from "drizzle-orm";
 
+import { requireAuth } from "@/lib/auth/guards";
+
 export async function POST(request: NextRequest) {
   try {
     // Проверка аутентификации
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const { 
       title, 

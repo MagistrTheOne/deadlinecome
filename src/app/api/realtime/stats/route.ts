@@ -4,6 +4,8 @@ import { LoggerService } from '@/lib/logger';
 import { cacheUtils } from '@/lib/cache/redis';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/realtime/stats - Получение real-time статистики
 export async function GET(request: NextRequest) {
   try {
@@ -13,14 +15,11 @@ export async function GET(request: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     // Проверяем кэш (короткое время жизни для real-time данных)
-    const cacheKey = `realtime:stats:${userId}`;
-    const cachedStats = await cacheUtils.getApiResponse('realtime-stats', { userId });
+    const cacheKey = `realtime:stats:${session.user.id}`;
+    const cachedStats = await cacheUtils.getApiResponse('realtime-stats', { session.user.id });
 
     if (cachedStats) {
       LoggerService.logCache('GET', cacheKey, true);
@@ -190,10 +189,10 @@ export async function GET(request: NextRequest) {
     };
 
     // Кэшируем на 30 секунд (короткое время для real-time данных)
-    await cacheUtils.cacheApiResponse('realtime-stats', { userId }, realtimeStats, 30);
+    await cacheUtils.cacheApiResponse('realtime-stats', { session.user.id }, realtimeStats, 30);
 
     LoggerService.logCache('SET', cacheKey, false);
-    LoggerService.logUserAction('realtime_stats_view', userId);
+    LoggerService.logUserAction('realtime_stats_view', session.user.id);
 
     return ValidationService.createSuccessResponse(realtimeStats);
 

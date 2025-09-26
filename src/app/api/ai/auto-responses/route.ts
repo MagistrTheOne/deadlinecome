@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth/guards";
 
 interface AutoResponseContext {
   user?: {
@@ -18,9 +18,7 @@ interface AutoResponseContext {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await requireAuth(request);
 
     if (!session) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 });

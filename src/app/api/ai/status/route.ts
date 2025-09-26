@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { AIService } from "@/lib/ai/ai-service";
 import { VasilyService } from "@/lib/ai/vasily-service";
+
+import { requireAuth } from "@/lib/auth/guards";
 
 export async function GET(request: NextRequest) {
   try {
     // Проверка аутентификации
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     // Получаем статус AI сервиса
     const aiStatus = AIService.getServiceStatus();

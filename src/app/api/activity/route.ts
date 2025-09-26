@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { issue, aiConversation } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 
+import { requireAuth } from "@/lib/auth/guards";
+
 export async function GET(request: NextRequest) {
   try {
     // Проверка аутентификации
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
@@ -30,7 +25,7 @@ export async function GET(request: NextRequest) {
     const recentConversations = await db
       .select()
       .from(aiConversation)
-      .where(eq(aiConversation.userId, session.user.id))
+      .where(eq(aiConversation.session.user.id, session.user.id))
       .orderBy(desc(aiConversation.createdAt))
       .limit(5);
 

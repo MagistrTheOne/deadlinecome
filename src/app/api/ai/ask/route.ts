@@ -1,21 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { issue, aiConversation } from "@/lib/db/schema";
 import { AIService, TaskContext } from "@/lib/ai/ai-service";
 import { VasilyService } from "@/lib/ai/vasily-service";
 import { eq, desc } from "drizzle-orm";
 
+import { requireAuth } from "@/lib/auth/guards";
+
 export async function POST(request: NextRequest) {
   try {
     // Проверка аутентификации
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const session = await requireAuth(request);
 
     const { query, workspaceId, projectId } = await request.json();
 
@@ -69,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     // Получаем ответ от Василия
     const vasilyResponse = await VasilyService.chat(query, {
-      userId: session.user.id,
+      session.user.id: session.user.id,
       workspaceId: workspaceId || undefined,
       projectId: projectId || undefined,
       timeOfDay: new Date().getHours(),
@@ -79,7 +74,7 @@ export async function POST(request: NextRequest) {
     // Сохраняем разговор в историю
     await db.insert(aiConversation).values({
       id: crypto.randomUUID(),
-      userId: session.user.id,
+      session.user.id: session.user.id,
       workspaceId: workspaceId || null,
       query,
       response: vasilyResponse.response,

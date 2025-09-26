@@ -4,6 +4,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/boards/[boardId]/analytics - Получить аналитику доски
 export async function GET(
   request: NextRequest,
@@ -18,18 +20,14 @@ export async function GET(
 
     const { boardId } = await params;
     const { searchParams } = new URL(request.url);
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     const startDate = searchParams.get('startDate') ? new Date(searchParams.get('startDate')!) : undefined;
     const endDate = searchParams.get('endDate') ? new Date(searchParams.get('endDate')!) : undefined;
 
     const analytics = await AnalyticsService.getBoardAnalytics(boardId, startDate, endDate);
 
-    LoggerService.logUserAction('board-analytics-viewed', userId, { boardId });
+    LoggerService.logUserAction('board-analytics-viewed', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse(analytics);
 
@@ -52,15 +50,11 @@ export async function POST(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     await AnalyticsService.updateBoardMetrics(boardId);
 
-    LoggerService.logUserAction('board-metrics-updated', userId, { boardId });
+    LoggerService.logUserAction('board-metrics-updated', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse({ success: true });
 

@@ -4,6 +4,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/boards/[boardId]/swimlanes - Получить swimlanes доски
 export async function GET(
   request: NextRequest,
@@ -17,15 +19,11 @@ export async function GET(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     const swimlanes = await SwimlaneService.getBoardSwimlanes(boardId);
 
-    LoggerService.logUserAction('board-swimlanes-fetched', userId, { boardId });
+    LoggerService.logUserAction('board-swimlanes-fetched', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse(swimlanes);
 
@@ -50,11 +48,7 @@ export async function POST(
     const { boardId } = await params;
     const body = await request.json();
     const { name, type, field, color, settings } = body;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     if (!name || !type) {
       return ValidationService.createErrorResponse('Missing required fields', 400);
@@ -76,7 +70,7 @@ export async function POST(
       settings
     });
 
-    LoggerService.logUserAction('board-swimlane-created', userId, {
+    LoggerService.logUserAction('board-swimlane-created', session.user.id, {
       boardId,
       swimlaneId: newSwimlane.id,
       name: newSwimlane.name,

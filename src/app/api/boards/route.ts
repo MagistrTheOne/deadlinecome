@@ -3,6 +3,7 @@ import { BoardService } from '@/lib/services/board-service';
 import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
+import { requireAuth } from '@/lib/auth/guards';
 import {
   parsePagination,
   createPaginatedResponse,
@@ -19,19 +20,15 @@ export async function GET(request: NextRequest) {
       return rateLimitResult.response!;
     }
 
+    const session = await requireAuth(request);
     const { searchParams } = new URL(request.url);
-    const userId = request.headers.get('x-user-id');
     const workspaceId = searchParams.get('workspaceId');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
 
     // Парсим параметры пагинации
     const { page, limit, offset } = parsePagination(request, { maxLimit: 50 });
 
     // Получаем все доски пользователя (для подсчета total)
-    const allBoards = await BoardService.getUserBoards(userId, workspaceId || undefined);
+    const allBoards = await BoardService.getUserBoards(session.user.id, workspaceId || undefined);
     const total = allBoards.length;
 
     // Применяем пагинацию
@@ -39,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     const result = createPaginatedResponse(paginatedBoards, total, { page, limit });
 
-    LoggerService.logUserAction('boards-fetched', userId, {
+    LoggerService.logUserAction('boards-fetched', session.user.id, {
       count: paginatedBoards.length,
       total,
       page,
@@ -68,11 +65,7 @@ export async function POST(request: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     // Используем идемпотентность для создания доски
     return await handleIdempotentPost(request, async () => {
@@ -89,11 +82,11 @@ export async function POST(request: NextRequest) {
         type,
         workspaceId,
         projectId,
-        createdById: userId,
+        createdById: session.user.id,
         templateId
       });
 
-      LoggerService.logUserAction('board-created', userId, {
+      LoggerService.logUserAction('board-created', session.user.id, {
         boardId: newBoard.id,
         name: newBoard.name,
         type: newBoard.type

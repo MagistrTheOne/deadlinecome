@@ -4,6 +4,8 @@ import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { ValidationService } from '@/lib/validation/validator';
 
+import { requireAuth } from "@/lib/auth/guards";
+
 // GET /api/boards/[boardId]/analytics/columns - Получить аналитику колонок
 export async function GET(
   request: NextRequest,
@@ -17,15 +19,11 @@ export async function GET(
     }
 
     const { boardId } = await params;
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return ValidationService.createErrorResponse('User ID required', 401);
-    }
+    const session = await requireAuth(request);
 
     const columnAnalytics = await AnalyticsService.getColumnAnalytics(boardId);
 
-    LoggerService.logUserAction('board-column-analytics-viewed', userId, { boardId });
+    LoggerService.logUserAction('board-column-analytics-viewed', session.user.id, { boardId });
 
     return ValidationService.createSuccessResponse(columnAnalytics);
 
