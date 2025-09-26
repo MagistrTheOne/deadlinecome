@@ -1,6 +1,13 @@
 import { AIService } from "./ai-service";
 import { VasilyPersonality } from "./vasily-personality";
 import { gigaChatService } from "./gigachat";
+import { AIClient } from './core/ai-client';
+import { GigaChatProvider } from './core/providers/gigachat';
+import { OpenAIProvider } from './core/providers/openai';
+import { CircuitBreaker } from './core/resilience/circuit-breaker';
+import { TokenBucket } from './core/resilience/rate-limit';
+import { cache, aiCacheKey } from './core/cache/cache';
+import { loadSystem } from './core/prompts';
 
 export interface VasilyResponse {
   response: string;
@@ -12,6 +19,26 @@ export interface VasilyResponse {
   memoryUsed?: boolean;
   message?: string;
   actions?: string[];
+}
+
+// ---- New unified client integration ----
+const cb = new CircuitBreaker({ threshold: 3, cooldownMs: 15000 });
+const buckets = new Map<string, TokenBucket>();
+function bucket(key: string){ if(!buckets.has(key)) buckets.set(key, new TokenBucket(10, 2)); return buckets.get(key)!; }
+
+const client = new AIClient(
+  new GigaChatProvider({ baseUrl: process.env.GIGACHAT_BASE!, apiKey: process.env.GIGACHAT_KEY! }),
+  new OpenAIProvider({ apiKey: process.env.OPENAI_API_KEY! })
+);
+
+export async function askVasily(prompt: string, ctx: { userId?: string, route?: string } = {}){
+  const key = aiCacheKey({ route: ctx.route ?? 'vasily', prompt, user: ctx.userId });
+  const hit = await cache.get<any>(key); if (hit) return hit;
+  if (!bucket(ctx.userId ?? 'anon').allow(1)) throw new Error('rate-limited');
+  const system = await loadSystem('vasily');
+  const res = await cb.exec(() => client.chat({ prompt, system, json: true }));
+  await cache.set(key, res, 120);
+  return res;
 }
 
 export class VasilyService {
