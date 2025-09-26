@@ -14,7 +14,8 @@
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "analyze": "ANALYZE=true next build",
-    "measure-perf": "node scripts/measure-performance.js"
+    "measure-perf": "node scripts/measure-performance.js",
+    "db-migrate": "node scripts/apply-db-migrations.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

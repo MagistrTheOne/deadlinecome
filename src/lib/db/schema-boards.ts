@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, uuid, boolean, integer, jsonb } from 'drizzle-orm/pg-core';
-import { user } from './schema';
+import { user, workspace, project } from './schema';
 
 // Таблица досок (как в Jira)
 export const board = pgTable('board', {
@@ -7,8 +7,8 @@ export const board = pgTable('board', {
   name: text('name').notNull(),
   description: text('description'),
   type: text('type').notNull().default('kanban'), // kanban, scrum, custom
-  workspaceId: uuid('workspace_id').notNull(),
-  projectId: uuid('project_id'),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspace.id, { onDelete: 'cascade' }),
+  projectId: uuid('project_id').references(() => project.id, { onDelete: 'cascade' }),
   createdById: uuid('created_by_id').notNull().references(() => user.id),
   isDefault: boolean('is_default').default(false),
   isArchived: boolean('is_archived').default(false),

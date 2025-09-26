@@ -1,16 +1,17 @@
 import { pgTable, text, timestamp, boolean, integer, json, uuid } from "drizzle-orm/pg-core";
+import { user } from "./schema";
 
 // Real-time события
 export const realtimeEvent = pgTable("realtime_event", {
   id: uuid("id").primaryKey().defaultRandom(),
   type: text("type").notNull().$type<
-    "TASK_CREATED" | "TASK_UPDATED" | "TASK_DELETED" | 
+    "TASK_CREATED" | "TASK_UPDATED" | "TASK_DELETED" |
     "PROJECT_CREATED" | "PROJECT_UPDATED" | "PROJECT_DELETED" |
     "USER_JOINED" | "USER_LEFT" | "USER_STATUS_CHANGED" |
     "AI_ACTION" | "AI_NOTIFICATION" | "CHAT_MESSAGE" |
     "COMMENT_ADDED" | "FILE_UPLOADED" | "DEADLINE_ALERT"
   >(),
-  userId: text("user_id").notNull(),
+  userId: uuid("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   workspaceId: text("workspace_id"),
   projectId: text("project_id"),
   entityId: text("entity_id"), // ID сущности (задача, проект и т.д.)

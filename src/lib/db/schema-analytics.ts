@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, uuid, boolean, integer, jsonb, decimal } from 'drizzle-orm/pg-core';
 import { user } from './schema';
-import { board } from './schema-boards';
+import { board, boardColumn } from './schema-boards';
 import { issue } from './schema';
 
 // Таблица метрик досок
@@ -28,7 +28,7 @@ export const boardMetrics = pgTable('board_metrics', {
 export const boardColumnAnalytics = pgTable('board_column_analytics', {
   id: uuid('id').primaryKey().defaultRandom(),
   boardId: uuid('board_id').notNull().references(() => board.id, { onDelete: 'cascade' }),
-  columnId: uuid('column_id').notNull(),
+  columnId: uuid('column_id').notNull().references(() => boardColumn.id, { onDelete: 'cascade' }),
   date: timestamp('date').notNull(),
   issuesCount: integer('issues_count').notNull().default(0),
   averageTimeInColumn: decimal('average_time_in_column', { precision: 10, scale: 2 }),
