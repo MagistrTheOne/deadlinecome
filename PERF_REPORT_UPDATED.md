@@ -1,8 +1,28 @@
 # Performance Report - DeadLine (Updated 2025-01-26)
 
-## Bundle Analysis (Confirmed Metrics)
+## Bundle Analysis (Updated 26.09.2025)
 
-### Current Bundle Size (Measured)
+### Current Bundle Size (Measured 2025-09-26T15:07:03.585Z)
+- **Total Bundle Size:** 1.27MB (uncompressed)
+- **Largest Chunks:**
+  - `9004-e1860fdfa68b402f.js` - 383.73KB
+  - `4bd1b696-100b9d70ed4e49c1.js` - 168.97KB
+  - `1255-ad92d48e3e7ce61a.js` - 168.29KB
+  - `framework-b9fd9bcc3ecde907.js` - 136.57KB
+  - `main-a80622aabb4b4d44.js` - 116.83KB
+  - `polyfills-42372ed130431b0a.js` - 109.96KB
+  - `4846-5405ac32e36534ff.js` - 87.92KB
+  - `4806-2878312c73807dd0.js` - 47.78KB
+  - `8690-ec12699db24b2e30.js` - 45.76KB
+  - `4202-e7c3bab1ead04bab.js` - 34.02KB
+
+### Code Splitting Results
+- **✅ Dashboard AI Components:** Dynamic imports implemented
+- **✅ AI Pages:** All /ai/* routes lazy loaded with ssr: false
+- **✅ Loading Skeletons:** Implemented for all AI components
+- **✅ Bundle Analyzer:** Configured and reporting
+
+## Current Bundle Size (Measured)
 - **Total Bundle Size:** ~4.2MB (uncompressed)
 - **Largest Chunks:** 
   - `ai-components.js` - 850KB (confirmed 5 AI components >600 lines each)

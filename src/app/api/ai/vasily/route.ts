@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { askVasily } from '@/src/lib/ai/vasily-service';
+import { askVasily } from '@/lib/ai/vasily-service';
 
 export async function POST(req: Request){
   const { prompt, userId } = await req.json();
