@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -21,17 +24,41 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ user: userData[0] });
+    return NextResponse.json({
+      user: {
+        id: userData[0].id,
+        name: userData[0].name,
+        email: userData[0].email,
+        image: userData[0].image,
+        username: userData[0].username,
+        bio: userData[0].bio,
+        location: userData[0].location,
+        website: userData[0].website,
+        timezone: userData[0].timezone,
+        language: userData[0].language,
+        theme: userData[0].theme,
+        status: userData[0].status,
+        statusMessage: userData[0].statusMessage,
+        lastActive: userData[0].lastActive
+      }
+    });
+
   } catch (error) {
     console.error("Error fetching user profile:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -46,25 +73,11 @@ export async function PUT(request: NextRequest) {
       language,
       theme,
       status,
-      statusMessage,
-      notifications,
-      preferences
+      statusMessage
     } = body;
 
-    // Проверяем уникальность username
-    if (username) {
-      const existingUser = await db
-        .select()
-        .from(user)
-        .where(eq(user.username, username))
-        .limit(1);
-      
-      if (existingUser.length > 0 && existingUser[0].id !== session.user.id) {
-        return NextResponse.json({ error: "Username already taken" }, { status: 400 });
-      }
-    }
-
-    const updatedUser = await db
+    // Обновляем профиль пользователя
+    await db
       .update(user)
       .set({
         name: name || undefined,
@@ -77,17 +90,19 @@ export async function PUT(request: NextRequest) {
         theme: theme || undefined,
         status: status || undefined,
         statusMessage: statusMessage || undefined,
-        notifications: notifications ? JSON.stringify(notifications) : undefined,
-        preferences: preferences ? JSON.stringify(preferences) : undefined,
-        lastActive: new Date(),
         updatedAt: new Date()
       })
-      .where(eq(user.id, session.user.id))
-      .returning();
+      .where(eq(user.id, session.user.id));
 
-    return NextResponse.json({ user: updatedUser[0] });
+    return NextResponse.json({
+      message: "Profile updated successfully"
+    });
+
   } catch (error) {
     console.error("Error updating user profile:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

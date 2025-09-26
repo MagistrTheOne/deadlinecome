@@ -23,8 +23,11 @@ import {
   Sparkles,
   MessageSquare,
   Bell,
-  Search
+  Search,
+  Keyboard
 } from "lucide-react";
+import { HotkeysModal } from "@/components/ui/hotkeys-modal";
+import { useHotkeys } from "@/lib/hotkeys";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -126,7 +129,11 @@ const workspaceItems = [
 
 export function Sidebar({ isOpen = true, onClose, className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [showHotkeys, setShowHotkeys] = useState(false);
   const pathname = usePathname();
+  
+  // Инициализируем горячие клавиши
+  useHotkeys();
 
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
@@ -145,7 +152,7 @@ export function Sidebar({ isOpen = true, onClose, className }: SidebarProps) {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-black/80 backdrop-blur-xl border-r border-white/10 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+          "fixed lg:static inset-y-0 left-0 z-50 w-64 glass-sidebar transform transition-transform duration-300 ease-in-out lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
           collapsed && "lg:w-16",
           className
@@ -158,6 +165,15 @@ export function Sidebar({ isOpen = true, onClose, className }: SidebarProps) {
               <h2 className="text-lg font-semibold text-white">Меню</h2>
             )}
             <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowHotkeys(true)}
+                className="text-white/60 hover:text-white hover:bg-white/10"
+                title="Горячие клавиши"
+              >
+                <Keyboard className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -320,6 +336,12 @@ export function Sidebar({ isOpen = true, onClose, className }: SidebarProps) {
           )}
         </div>
       </div>
+      
+      {/* Модальное окно горячих клавиш */}
+      <HotkeysModal 
+        isOpen={showHotkeys} 
+        onClose={() => setShowHotkeys(false)} 
+      />
     </>
   );
 }

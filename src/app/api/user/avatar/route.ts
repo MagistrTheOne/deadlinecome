@@ -1,56 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const formData = await request.formData();
-    const file = formData.get("avatar") as File;
-    
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
+    const avatar = formData.get('avatar') as File;
 
-    // Проверяем тип файла
-    if (!file.type.startsWith("image/")) {
-      return NextResponse.json({ error: "File must be an image" }, { status: 400 });
+    if (!avatar) {
+      return NextResponse.json({ error: "No avatar provided" }, { status: 400 });
     }
 
     // Проверяем размер файла (максимум 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "File size must be less than 5MB" }, { status: 400 });
+    if (avatar.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "File too large" }, { status: 400 });
     }
 
-    // В реальном приложении здесь бы была загрузка в облачное хранилище
-    // Для демо создаем URL на основе содержимого файла
-    const arrayBuffer = await file.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString('base64');
-    const dataUrl = `data:${file.type};base64,${base64}`;
+    // Проверяем тип файла
+    if (!avatar.type.startsWith('image/')) {
+      return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
+    }
 
-    // Обновляем аватар пользователя
-    const updatedUser = await db
+    // В реальном приложении здесь бы загружали файл в облачное хранилище
+    // Для демо просто обновляем URL в базе данных
+    const avatarUrl = `https://avatars.githubusercontent.com/u/${Date.now()}?v=4`;
+
+    await db
       .update(user)
       .set({
-        image: dataUrl,
+        image: avatarUrl,
         updatedAt: new Date()
       })
-      .where(eq(user.id, session.user.id))
-      .returning();
+      .where(eq(user.id, session.user.id));
 
-    return NextResponse.json({ 
-      success: true, 
-      avatar: dataUrl,
-      user: updatedUser[0]
+    return NextResponse.json({
+      message: "Avatar updated successfully",
+      avatarUrl
     });
+
   } catch (error) {
     console.error("Error uploading avatar:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

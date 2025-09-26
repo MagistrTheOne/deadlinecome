@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
+import { useHotkeys } from "@/lib/hotkeys";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,9 @@ export default function DashboardPage() {
   const [dashboardStats, setDashboardStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Инициализируем горячие клавиши
+  useHotkeys();
 
   useEffect(() => {
     scrollToBottom();
@@ -240,7 +244,7 @@ export default function DashboardPage() {
           {/* Stats Cards */}
           <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-8">
             {/* Workspaces Card */}
-            <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+            <Card className="glass-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white">
                   Рабочие пространства
@@ -270,7 +274,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Projects Card */}
-            <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+            <Card className="glass-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white">
                   Проекты
@@ -297,7 +301,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Team Members Card */}
-            <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+            <Card className="glass-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-white">
                   Участники команды
@@ -326,7 +330,7 @@ export default function DashboardPage() {
             {/* Left Column - Profile & Tasks */}
             <div className="lg:col-span-2 space-y-6">
               {/* Compact User Profile */}
-              <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+              <Card className="glass-card">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-white flex items-center gap-2">
@@ -384,7 +388,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Current Tasks */}
-              <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+              <Card className="glass-card">
                 <CardHeader>
                   <CardTitle className="text-white">Текущие задачи</CardTitle>
                 </CardHeader>
@@ -421,7 +425,7 @@ export default function DashboardPage() {
             {/* Right Column - AI Chat & Quick Actions */}
             <div className="space-y-6">
               {/* AI Chat */}
-              <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+              <Card className="glass-card">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-white flex items-center gap-2">
@@ -563,7 +567,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Quick Actions */}
-              <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
+              <Card className="glass-card">
                 <CardHeader>
                   <CardTitle className="text-white">Быстрые действия</CardTitle>
                 </CardHeader>
