@@ -1,4 +1,4 @@
-nimport winston from 'winston';
+import winston from 'winston';
 import path from 'path';
 
 // Создаем директорию для логов

@@ -1,148 +1,249 @@
-import { readdirSync, statSync, readFileSync } from 'fs';
-import { join, extname, resolve } from 'path';
+#!/usr/bin/env node
 
-const ROOT_DIR = resolve(process.cwd(), 'src');
-const COMPONENT_DIRS = ['components', 'features', 'app'];
-const COMPONENT_EXTS = ['.tsx', '.ts'];
+/**
+ * Component Inventory Script
+ *
+ * Автоматически сканирует компоненты и создает каталог.
+ * Анализирует структуру, зависимости и потенциальные проблемы.
+ */
 
-function findComponentFiles(dir, files = []) {
-  const items = readdirSync(dir);
+import fs from 'node:fs';
+import path from 'node:path';
 
-  for (const item of items) {
-    const fullPath = join(dir, item);
-    const stat = statSync(fullPath);
+const root = 'src';
+const exts = ['.tsx', '.ts'];
+const components = [];
+const issues = [];
 
-    if (stat.isDirectory()) {
-      // Skip node_modules, __tests__, etc.
-      if (!item.startsWith('.') && item !== 'node_modules' && !item.includes('__tests__')) {
-        findComponentFiles(fullPath, files);
+// Вспомогательные функции
+function walk(dir) {
+  try {
+    const files = fs.readdirSync(dir);
+    for (const f of files) {
+      const p = path.join(dir, f);
+      try {
+        const s = fs.statSync(p);
+        if (s.isDirectory()) {
+          walk(p);
+        } else if (exts.some(e => p.endsWith(e)) && p.includes('components')) {
+          analyze(p);
+        }
+      } catch (error) {
+        console.warn(`Warning: Cannot access ${p}:`, error.message);
       }
-    } else if (COMPONENT_EXTS.includes(extname(item))) {
-      files.push(fullPath);
     }
+  } catch (error) {
+    console.warn(`Warning: Cannot read directory ${dir}:`, error.message);
   }
-
-  return files;
 }
 
-function analyzeComponent(filePath) {
-  const content = readFileSync(filePath, 'utf-8');
-  const relativePath = filePath.replace(ROOT_DIR, '').replace(/\\/g, '/');
+function analyze(filePath) {
+  try {
+    const code = fs.readFileSync(filePath, 'utf8');
+    const name = path.basename(filePath).replace(/\.(tsx|ts)$/, '');
+    const level = inferLevel(filePath);
+    const analysis = analyzeComponent(code, filePath);
 
-  // Extract component name from file path
-  const fileName = filePath.split(/[/\\]/).pop().replace(/\.(tsx|ts)$/, '');
+    components.push({
+      Path: filePath,
+      Name: name,
+      Level: level,
+      Responsibility: inferResponsibility(code, name),
+      Props: analysis.props,
+      'State/Store': analysis.state,
+      'Side-effects': analysis.sideEffects,
+      Uses: analysis.uses,
+      'Used by': 0, // Будет заполнено позже
+      Risks: analysis.risks,
+      LoC: analysis.loc,
+      Imports: analysis.imports
+    });
 
-  // Determine level based on path
-  let level = 'atom';
-  if (relativePath.includes('/features/')) level = 'feature';
-  else if (relativePath.includes('/layout/') || relativePath.includes('/app/') && relativePath.includes('layout')) level = 'layout';
-  else if (relativePath.includes('/page') || relativePath.includes('/app/') && !relativePath.includes('api')) level = 'page';
-  else if (relativePath.includes('/ui/')) level = 'atom';
-  else if (relativePath.includes('/common/')) level = 'molecule';
-  else if (relativePath.includes('/auth/')) level = 'organism';
+    // Анализ проблем
+    checkForIssues(filePath, code, analysis);
 
-  // Check for hooks, stores, utils
-  if (fileName.startsWith('use-')) level = 'hook';
-  else if (fileName.includes('store') || fileName.includes('context')) level = 'store';
-  else if (fileName.includes('util') || fileName.includes('helper')) level = 'util';
+  } catch (error) {
+    console.warn(`Warning: Cannot analyze ${filePath}:`, error.message);
+  }
+}
 
-  // Extract exports
-  const exportMatches = content.match(/export\s+(?:const|function|default|class)\s+(\w+)/g) || [];
-  const exports = exportMatches.map(match => match.replace(/export\s+(?:const|function|default|class)\s+/, ''));
+function inferLevel(filePath) {
+  const dir = path.dirname(filePath);
 
-  // Extract imports
-  const importMatches = content.match(/import\s+.*?from\s+['"]([^'"]+)['"]/g) || [];
-  const imports = importMatches.map(match => {
+  if (dir.includes('/atoms/') || dir.includes('/ui/')) return 'atom';
+  if (dir.includes('/molecules/')) return 'molecule';
+  if (dir.includes('/organisms/')) return 'organism';
+  if (dir.includes('/features/')) return 'feature';
+  if (dir.includes('/app/') || dir.includes('/pages/')) return 'page';
+  if (dir.includes('/layouts/')) return 'layout';
+  if (dir.includes('/providers/')) return 'provider';
+
+  return 'component';
+}
+
+function inferResponsibility(code, name) {
+  // Анализ на основе названия и кода
+  const lowerName = name.toLowerCase();
+
+  if (lowerName.includes('modal') || lowerName.includes('dialog')) return 'Modal/Dialog management';
+  if (lowerName.includes('form')) return 'Form handling';
+  if (lowerName.includes('list') || lowerName.includes('table')) return 'Data display';
+  if (lowerName.includes('chart') || lowerName.includes('graph')) return 'Data visualization';
+  if (lowerName.includes('button') || lowerName.includes('input')) return 'UI primitive';
+  if (lowerName.includes('nav') || lowerName.includes('menu')) return 'Navigation';
+  if (lowerName.includes('card')) return 'Content container';
+  if (lowerName.includes('layout')) return 'Page layout';
+
+  // Анализ кода
+  if (code.includes('useState') || code.includes('useReducer')) return 'State management';
+  if (code.includes('useEffect')) return 'Side effects';
+  if (code.includes('fetch') || code.includes('axios')) return 'Data fetching';
+
+  return 'UI component';
+}
+
+function analyzeComponent(code, filePath) {
+  const lines = code.split('\n');
+  const loc = lines.length;
+
+  // Анализ импортов
+  const imports = [];
+  const importMatches = code.match(/import\s+.*?from\s+['"]([^'"]+)['"]/g) || [];
+  importMatches.forEach(match => {
     const fromMatch = match.match(/from\s+['"]([^'"]+)['"]/);
-    return fromMatch ? fromMatch[1] : '';
-  }).filter(Boolean);
+    if (fromMatch) imports.push(fromMatch[1]);
+  });
 
-  // Check for props interface
-  const propsMatch = content.match(/interface\s+(\w+Props)\s+/);
-  const propsInterface = propsMatch ? propsMatch[1] : null;
+  // Анализ пропсов
+  let props = '';
+  const propsMatch = code.match(/interface\s+\w+Props\s*\{([^}]*)\}/s);
+  if (propsMatch) {
+    const propsContent = propsMatch[1];
+    const propMatches = propsContent.match(/(\w+):\s*([^;]+)/g) || [];
+    props = propMatches.map(p => p.split(':')[0].trim()).join('; ');
+  }
 
-  // Check for state/store usage
-  const hasZustand = content.includes('useStore') || content.includes('zustand');
-  const hasRedux = content.includes('useSelector') || content.includes('useDispatch');
-  const hasLocalState = content.includes('useState') || content.includes('useReducer');
+  // Анализ состояния
+  let state = '';
+  const stateMatches = code.match(/useState<[^>]*>\([^)]*\)/g) || [];
+  if (stateMatches.length > 0) {
+    state = `${stateMatches.length} useState calls`;
+  }
+  if (code.includes('useReducer')) state += ' useReducer';
+  if (code.includes('useContext')) state += ' Context';
 
-  // Check for side effects
-  const hasFetch = content.includes('fetch') || content.includes('axios');
-  const hasWebSocket = content.includes('WebSocket') || content.includes('socket');
-  const hasTimer = content.includes('setTimeout') || content.includes('setInterval');
+  // Анализ side effects
+  let sideEffects = '';
+  const effectMatches = code.match(/useEffect\(/g) || [];
+  if (effectMatches.length > 0) {
+    sideEffects = `${effectMatches.length} useEffect`;
+  }
+  if (code.includes('useLayoutEffect')) sideEffects += ' useLayoutEffect';
+  if (code.includes('useImperativeHandle')) sideEffects += ' useImperativeHandle';
 
-  // Check for UI libraries
-  const usesShadcn = imports.some(imp => imp.includes('@/components/ui'));
-  const usesIcons = imports.some(imp => imp.includes('lucide-react') || imp.includes('@heroicons'));
-  const usesUtils = imports.some(imp => imp.includes('@/lib'));
+  // Анализ зависимостей
+  const uses = [];
+  if (code.includes('React.')) uses.push('React');
+  if (code.includes('useCallback')) uses.push('useCallback');
+  if (code.includes('useMemo')) uses.push('useMemo');
+  if (code.includes('forwardRef')) uses.push('forwardRef');
+  if (code.includes('memo(')) uses.push('React.memo');
 
-  // Count lines
-  const lines = content.split('\n').length;
-
-  // Extract responsibility from comments or function description
-  const commentMatch = content.match(/\/\*\*\s*\n\s*\*\s*([^*]+)/);
-  const responsibility = commentMatch ? commentMatch[1].trim() : `${fileName} component`;
+  // Анализ рисков
+  const risks = [];
+  if (loc > 300) risks.push('Large component (>300 LoC)');
+  if (imports.length > 15) risks.push('Many dependencies (>15 imports)');
+  if (effectMatches.length > 3) risks.push('Multiple useEffect (>3)');
+  if (code.includes('any') || code.includes('unknown')) risks.push('Weak typing');
+  if (!code.includes('React.memo') && !code.includes('memo(') && stateMatches.length > 0) {
+    risks.push('Not memoized (has state)');
+  }
 
   return {
-    path: relativePath,
-    name: fileName,
-    level,
-    responsibility: responsibility.substring(0, 100), // Limit length
-    props: propsInterface || 'N/A',
-    stateStore: hasZustand ? 'zustand' : hasRedux ? 'redux' : hasLocalState ? 'local' : 'none',
-    sideEffects: [hasFetch && 'fetch', hasWebSocket && 'websocket', hasTimer && 'timer'].filter(Boolean).join(', ') || 'none',
-    uses: [usesShadcn && 'shadcn', usesIcons && 'icons', usesUtils && 'utils'].filter(Boolean).join(', ') || 'none',
-    lines,
-    exports: exports.join(', '),
+    props,
+    state: state || 'None',
+    sideEffects: sideEffects || 'None',
+    uses: uses.join(', ') || 'None',
+    risks: risks.join('; ') || 'None',
+    loc,
     imports: imports.length
   };
 }
 
-function generateMarkdownTable(components) {
-  let output = '# Components Catalog\n\n';
-  output += '| Path | Name | Level | Responsibility | Props | State/Store | Side-effects | Uses | Lines | Exports |\n';
-  output += '| ---- | ---- | ----- | -------------- | ----- | ----------- | ------------ | ---- | ----- | ------- |\n';
+function checkForIssues(filePath, code, analysis) {
+  const fileName = path.basename(filePath);
 
-  for (const comp of components) {
-    output += `| ${comp.path} | ${comp.name} | ${comp.level} | ${comp.responsibility} | ${comp.props} | ${comp.stateStore} | ${comp.sideEffects} | ${comp.uses} | ${comp.lines} | ${comp.exports} |\n`;
-  }
-
-  // Dead components analysis
-  output += '\n## Dead/Orphan Components\n\n';
-  const potentialDead = components.filter(c => c.imports === 0 && !c.path.includes('page') && !c.path.includes('layout'));
-  if (potentialDead.length > 0) {
-    potentialDead.forEach(comp => {
-      output += `- ${comp.path} (${comp.lines} lines, ${comp.imports} imports)\n`;
+  if (analysis.loc > 300) {
+    issues.push({
+      component: fileName,
+      issue: 'Component too large',
+      severity: 'medium',
+      description: `${analysis.loc} lines of code. Consider splitting into smaller components.`,
+      recommendation: 'Split into smaller components, use composition'
     });
-  } else {
-    output += 'No obvious dead components found.\n';
   }
 
-  // Heavy components
-  output += '\n## Heavy Components (>300 lines)\n\n';
-  const heavy = components.filter(c => c.lines > 300);
-  if (heavy.length > 0) {
-    heavy.forEach(comp => {
-      output += `- ${comp.path} (${comp.lines} lines)\n`;
+  if (analysis.imports > 15) {
+    issues.push({
+      component: fileName,
+      issue: 'Too many imports',
+      severity: 'low',
+      description: `${analysis.imports} imports. May indicate tight coupling.`,
+      recommendation: 'Consider creating a barrel export or reducing dependencies'
     });
-  } else {
-    output += 'No heavy components found.\n';
   }
 
-  return output;
+  if (code.includes('console.log') || code.includes('console.error')) {
+    issues.push({
+      component: fileName,
+      issue: 'Console statements in production',
+      severity: 'low',
+      description: 'Console statements found in component code.',
+      recommendation: 'Remove console statements or use proper logging'
+    });
+  }
+
+  if (code.match(/useEffect.*\[\]/)) {
+    issues.push({
+      component: fileName,
+      issue: 'useEffect without dependencies',
+      severity: 'high',
+      description: 'useEffect with empty dependency array may cause issues.',
+      recommendation: 'Add proper dependencies or remove empty array'
+    });
+  }
 }
 
-// Main execution
-const componentFiles = [];
-for (const dir of COMPONENT_DIRS) {
-  const fullDir = join(ROOT_DIR, dir);
-  try {
-    componentFiles.push(...findComponentFiles(fullDir));
-  } catch (e) {
-    // Directory might not exist
+// Генерация отчетов
+function generateReports() {
+  console.log(`📊 Found ${components.length} components`);
+
+  // Генерация COMPONENTS_CATALOG.md
+  const header = '| Path | Name | Level | Responsibility | Props | State/Store | Side-effects | Uses | Used by | Risks | LoC |\n|---|---|---|---|---|---|---|---|---:|---|--:|\n';
+  const body = components.map(c =>
+    `| ${c.Path} | ${c.Name} | ${c.Level} | ${c.Responsibility} | ${c.Props} | ${c['State/Store']} | ${c['Side-effects']} | ${c.Uses} | ${c['Used by']} | ${c.Risks} | ${c.LoC} |`
+  ).join('\n');
+
+  fs.writeFileSync('COMPONENTS_CATALOG.md', `# Components Catalog\n\n${header}${body}\n`);
+  console.log('✅ COMPONENTS_CATALOG.md generated');
+
+  // Генерация UI_ISSUES.md
+  if (issues.length > 0) {
+    const issuesHeader = '| Component | Issue | Severity | Description | Recommendation |\n|---|---|---|---|---|\n';
+    const issuesBody = issues.map(i =>
+      `| ${i.component} | ${i.issue} | ${i.severity} | ${i.description} | ${i.recommendation} |`
+    ).join('\n');
+
+    fs.writeFileSync('UI_ISSUES.md', `# UI Issues Report\n\nFound ${issues.length} potential issues.\n\n${issuesHeader}${issuesBody}\n`);
+    console.log('✅ UI_ISSUES.md generated');
+  } else {
+    fs.writeFileSync('UI_ISSUES.md', '# UI Issues Report\n\nNo issues found! 🎉\n');
+    console.log('✅ UI_ISSUES.md generated (no issues)');
   }
 }
 
-const components = componentFiles.map(analyzeComponent);
-const markdown = generateMarkdownTable(components);
-console.log(markdown);
+// Запуск
+console.log('🔍 Starting component inventory...\n');
+walk(root);
+generateReports();
+console.log('\n🎉 Component inventory complete!');

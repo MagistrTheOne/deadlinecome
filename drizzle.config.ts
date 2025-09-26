@@ -1,22 +1,14 @@
-import { defineConfig } from "drizzle-kit";
+import type { Config } from 'drizzle-kit';
 
-export default defineConfig({
-  schema: [
-    "./src/lib/db/schema.ts",
-    "./src/lib/db/schema-boards.ts",
-    "./src/lib/db/schema-swimlanes.ts",
-    "./src/lib/db/schema-filters.ts",
-    "./src/lib/db/schema-permissions.ts",
-    "./src/lib/db/schema-analytics.ts"
-  ],
-  out: "./drizzle",
-  dialect: "postgresql",
-  driver: "pg",
+export default {
+  schema: './src/db/schema/**/*.ts',
+  out: './drizzle/migrations',
+  dialect: 'postgresql',
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL || "postgresql://neondb_owner:npg_Jw9lEFOT5rGf@ep-falling-term-aeli30gd-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+    url: process.env.DATABASE_URL!
   },
   verbose: true,
   strict: true,
-  casing: "snake_case",
+  casing: 'snake_case',
   breakpoints: true,
-});
+} satisfies Config;
