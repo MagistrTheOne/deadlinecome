@@ -10,7 +10,7 @@ import { OpenAIProvider } from './providers/openai';
 import { CircuitBreaker } from './resilience/circuit-breaker';
 import { TokenBucket } from './resilience/rate-limit';
 import { cache, aiCacheKey } from './cache/cache';
-import { loadSystem } from './prompts';
+import { getSpecialistPrompt } from './prompts';
 
 // AI Specialist Types
 export enum AISpecialistType {
@@ -164,7 +164,7 @@ const SPECIALISTS: Record<AISpecialistType, AISpecialistInfo> = {
     color: 'teal',
     skills: ['Test Automation', 'Quality Assurance', 'Bug Tracking', 'Test Strategy'],
     personality: 'Тщательная и методичная, любит порядок',
-    available: false,
+    available: true,
     mood: 'focused'
   },
   [AISpecialistType.DMITRY]: {
@@ -176,7 +176,7 @@ const SPECIALISTS: Record<AISpecialistType, AISpecialistInfo> = {
     color: 'indigo',
     skills: ['System Architecture', 'Design Patterns', 'Scalability', 'Microservices'],
     personality: 'Архитектор с видением, любит строить надежные системы',
-    available: false,
+    available: true,
     mood: 'thinking'
   },
   [AISpecialistType.MARIA]: {
@@ -188,7 +188,7 @@ const SPECIALISTS: Record<AISpecialistType, AISpecialistInfo> = {
     color: 'rose',
     skills: ['UI/UX Design', 'Prototyping', 'User Research', 'Design Systems'],
     personality: 'Творческая и эмпатичная, любит создавать красивые интерфейсы',
-    available: false,
+    available: true,
     mood: 'excited'
   },
   [AISpecialistType.ALEXEY]: {
@@ -200,7 +200,7 @@ const SPECIALISTS: Record<AISpecialistType, AISpecialistInfo> = {
     color: 'slate',
     skills: ['Code Review', 'Code Quality', 'Best Practices', 'Refactoring'],
     personality: 'Строгий, но справедливый критик кода',
-    available: false,
+    available: true,
     mood: 'focused'
   },
   [AISpecialistType.IRINA]: {
@@ -212,7 +212,7 @@ const SPECIALISTS: Record<AISpecialistType, AISpecialistInfo> = {
     color: 'emerald',
     skills: ['Team Analytics', 'Motivation', 'Burnout Prevention', 'Team Dynamics'],
     personality: 'Эмпатичная и заботливая, любит работать с людьми',
-    available: false,
+    available: true,
     mood: 'relaxed'
   },
   [AISpecialistType.SERGEY]: {
@@ -224,7 +224,7 @@ const SPECIALISTS: Record<AISpecialistType, AISpecialistInfo> = {
     color: 'amber',
     skills: ['Technical Writing', 'Content Creation', 'Knowledge Base', 'Blog Writing'],
     personality: 'Коммуникативный и образованный, любит объяснять сложное',
-    available: false,
+    available: true,
     mood: 'productive'
   }
 };
@@ -366,8 +366,8 @@ export class AITeamManager {
     context?: any
   ): Promise<string> {
     try {
-      // Try to load specialist-specific prompt
-      return await loadSystem(specialist);
+      // Use specialized prompt system
+      return await getSpecialistPrompt(specialist, context);
     } catch {
       // Fallback to generic specialist prompt
       const specialistInfo = SPECIALISTS[specialist];
