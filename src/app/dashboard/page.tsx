@@ -31,6 +31,7 @@ import { RoleManagement } from "@/components/ui/role-management";
 import { VasilyProjectManager } from "@/components/ui/vasily-project-manager";
 import { RealTimeTodo } from "@/components/ui/real-time-todo";
 import { WebSocketStats } from "@/components/ui/websocket-stats";
+import { AITeamChat } from "@/components/ui/ai-team-chat";
 import dynamic from "next/dynamic";
 import { AIDashboardSkeleton } from "@/components/ui/loading-skeleton";
 
@@ -648,6 +649,14 @@ export default function DashboardPage() {
                   </Button>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* AI Team Chat - новая фича */}
+            <div className="mt-8">
+              <AITeamChat
+                workspaceId="demo-workspace"
+                projectId="demo-project"
+              />
             </div>
           </div>
         </div>

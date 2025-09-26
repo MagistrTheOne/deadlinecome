@@ -80,6 +80,28 @@ export const aiChatSchema = z.object({
   }).optional(),
 });
 
+// AI Team Chat - универсальный чат с любым специалистом
+export const aiTeamChatSchema = z.object({
+  message: z.string().min(1, 'Сообщение обязательно').max(4000, 'Сообщение слишком длинное'),
+  specialist: z.enum([
+    'vasily', 'olga', 'pavel', 'mikhail', 'tatyana', 'svetlana', 'andrey',
+    'anna', 'dmitry', 'maria', 'alexey', 'irina', 'sergey'
+  ], {
+    errorMap: () => ({ message: 'Неподдерживаемый AI специалист' })
+  }),
+  workspaceId: z.string().optional(),
+  projectId: z.string().optional(),
+  context: z.object({
+    userActivity: z.string().optional(),
+    previousMessages: z.array(z.object({
+      specialist: z.string(),
+      role: z.enum(['user', 'assistant']),
+      content: z.string(),
+      timestamp: z.date()
+    })).optional(),
+  }).optional(),
+});
+
 // Уведомления
 export const notificationSchema = z.object({
   type: z.enum(['info', 'success', 'warning', 'error', 'crisis'], {
@@ -228,6 +250,7 @@ export const schemas = {
   issue: issueSchema,
   issueUpdate: issueUpdateSchema,
   aiChat: aiChatSchema,
+  aiTeamChat: aiTeamChatSchema,
   notification: notificationSchema,
   websocketEvent: websocketEventSchema,
   search: searchSchema,
@@ -257,6 +280,7 @@ export type ProjectUpdateInput = z.infer<typeof projectUpdateSchema>;
 export type IssueInput = z.infer<typeof issueSchema>;
 export type IssueUpdateInput = z.infer<typeof issueUpdateSchema>;
 export type AIChatInput = z.infer<typeof aiChatSchema>;
+export type AITeamChatInput = z.infer<typeof aiTeamChatSchema>;
 export type NotificationInput = z.infer<typeof notificationSchema>;
 export type WebSocketEventInput = z.infer<typeof websocketEventSchema>;
 export type SearchInput = z.infer<typeof searchSchema>;
