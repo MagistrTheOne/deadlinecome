@@ -1,6 +1,6 @@
 "use client";
 
-import { BoardManager } from '@/components/ui/board-manager';
+import BoardManager from '@/components/ui/board-manager';
 
 export default function BoardsPage() {
   return (

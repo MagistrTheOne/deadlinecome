@@ -1,15 +1,33 @@
 import { Workspace, Member, Project, Issue } from "@/lib/types";
 import { generateId, generateKey } from "@/lib/utils";
 
+// Helper function to generate consistent UUID for seed data
+function generateSeedId(prefix: string, index: number): string {
+  // Create consistent UUIDs for seed data
+  const seed = `${prefix}-${index}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+
+  // Convert hash to UUID-like format
+  const hashStr = Math.abs(hash).toString(16).padStart(32, '0');
+  return `${hashStr.slice(0, 8)}-${hashStr.slice(8, 12)}-${hashStr.slice(12, 16)}-${hashStr.slice(16, 20)}-${hashStr.slice(20, 32)}`;
+}
+
 // Seed data
+// NOTE: Для демонстрации используются простые строковые ID
+// В продакшене все ID должны быть UUID (generateId())
 export const seedWorkspaces: Workspace[] = [
   {
-    id: "demo",
+    id: "demo-workspace",
     name: "Demo Workspace",
     slug: "demo",
   },
   {
-    id: "personal",
+    id: "personal-workspace",
     name: "Personal Projects",
     slug: "personal",
   },
@@ -17,48 +35,48 @@ export const seedWorkspaces: Workspace[] = [
 
 export const seedMembers: Member[] = [
   {
-    id: "demo-user",
+    id: "demo-owner",
     userId: "demo-user",
-    workspaceId: "demo",
+    workspaceId: "demo-workspace",
     role: "OWNER",
   },
   {
-    id: "demo-member-1",
-    userId: "demo-member-1",
-    workspaceId: "demo",
+    id: "demo-admin",
+    userId: "demo-admin",
+    workspaceId: "demo-workspace",
     role: "ADMIN",
   },
   {
-    id: "demo-member-2",
-    userId: "demo-member-2",
-    workspaceId: "demo",
+    id: "demo-member",
+    userId: "demo-member",
+    workspaceId: "demo-workspace",
     role: "MEMBER",
   },
 ];
 
 export const seedProjects: Project[] = [
   {
-    id: "demo-project-1",
+    id: "demo-project-web",
     key: "WEB",
     name: "Website Redesign",
-    workspaceId: "demo",
+    workspaceId: "demo-workspace",
     leadId: "demo-user",
     description: "Complete redesign of company website with modern UI/UX",
   },
   {
-    id: "demo-project-2",
+    id: "demo-project-api",
     key: "API",
     name: "API Development",
-    workspaceId: "demo",
-    leadId: "demo-member-1",
+    workspaceId: "demo-workspace",
+    leadId: "demo-admin",
     description: "RESTful API for mobile applications",
   },
   {
-    id: "demo-project-3",
+    id: "demo-project-mob",
     key: "MOB",
     name: "Mobile App",
-    workspaceId: "demo",
-    leadId: "demo-member-2",
+    workspaceId: "demo-workspace",
+    leadId: "demo-member",
     description: "Native mobile application for iOS and Android",
   },
 ];
@@ -66,8 +84,8 @@ export const seedProjects: Project[] = [
 export const seedIssues: Issue[] = [
   // Website Redesign issues
   {
-    id: "demo-issue-1",
-    projectId: "demo-project-1",
+    id: "demo-issue-web-1",
+    projectId: "demo-project-web",
     key: "WEB-1",
     title: "Create wireframes for homepage",
     description: "Design wireframes for the new homepage layout",
@@ -83,8 +101,8 @@ export const seedIssues: Issue[] = [
     order: 0,
   },
   {
-    id: "demo-issue-2",
-    projectId: "demo-project-1",
+    id: generateSeedId("issue", 2),
+    projectId: generateSeedId("project", 1),
     key: "WEB-2",
     title: "Implement responsive navigation",
     description: "Create responsive navigation component with mobile menu",

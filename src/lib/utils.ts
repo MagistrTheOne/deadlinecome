@@ -14,9 +14,13 @@ export function formatDate(date: string | Date): string {
 }
 
 export function generateId(): string {
-  return Math.random().toString(36).substr(2, 9);
+  return crypto.randomUUID();
 }
 
 export function generateKey(prefix: string): string {
-  return `${prefix}-${generateId().toUpperCase()}`;
+  // Генерируем уникальный номер для задач (например, WEB-1, WEB-2, ...)
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1000);
+  const uniqueNumber = (timestamp + random) % 10000; // Ограничиваем до 4 цифр
+  return `${prefix}-${uniqueNumber}`;
 }

@@ -11,9 +11,12 @@ export default defineConfig({
   ],
   out: "./drizzle",
   dialect: "postgresql",
+  driver: "pg",
   dbCredentials: {
-    url: "postgresql://neondb_owner:npg_Jw9lEFOT5rGf@ep-falling-term-aeli30gd-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+    connectionString: process.env.DATABASE_URL || "postgresql://neondb_owner:npg_Jw9lEFOT5rGf@ep-falling-term-aeli30gd-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
   },
   verbose: true,
   strict: true,
+  casing: "snake_case",
+  breakpoints: true,
 });

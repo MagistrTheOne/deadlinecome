@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { issue } from "@/lib/db/schema";
+import { issue, project } from "@/lib/db/schema";
 import { Issue } from "@/lib/types";
 import { generateId, generateKey } from "@/lib/utils";
 
@@ -33,9 +33,13 @@ export class DrizzleIssuesRepo implements IIssuesRepo {
     const projectIssues = await this.findByProject(issueData.projectId);
     const maxOrder = projectIssues.length > 0 ? Math.max(...projectIssues.map(i => i.order.getTime())) : Date.now();
 
+    // Получаем ключ проекта из базы данных
+    const projectResult = await db.select().from(project).where(eq(project.id, issueData.projectId)).limit(1);
+    const projectKey = projectResult[0]?.key || "NEW";
+
     const newIssue = {
       id,
-      key: generateKey(issueData.projectId.split("-")[1] || "NEW"),
+      key: generateKey(projectKey),
       ...issueData,
       order: new Date(maxOrder + 1),
     };

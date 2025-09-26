@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { LearningSystem } from "@/lib/ai/learning-system";
+import { AILearningSystemInstance as LearningSystem } from "@/lib/ai/learning-system";
 
 export async function GET(request: NextRequest) {
   try {

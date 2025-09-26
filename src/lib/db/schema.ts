@@ -19,9 +19,7 @@ export const user = pgTable("user", {
   preferences: text("preferences"), // JSON пользовательские настройки
   lastActive: timestamp("last_active").defaultNow(), // Последняя активность
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const session = pgTable("session", {
@@ -29,9 +27,7 @@ export const session = pgTable("session", {
   expiresAt: timestamp("expires_at").notNull(),
   token: text("token").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   userId: uuid("user_id")
@@ -54,9 +50,7 @@ export const account = pgTable("account", {
   scope: text("scope"),
   password: text("password"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const verification = pgTable("verification", {
@@ -67,7 +61,6 @@ export const verification = pgTable("verification", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .$onUpdate(() => new Date())
     .notNull(),
 });
 
@@ -81,9 +74,7 @@ export const workspace = pgTable("workspace", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const workspaceMember = pgTable("workspace_member", {
@@ -100,9 +91,7 @@ export const workspaceMember = pgTable("workspace_member", {
   skills: text("skills"), // JSON array of skills
   experience: integer("experience"), // years of experience
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 }, (t) => ({
   uniqueWorkspaceUser: [t.workspaceId, t.userId],
 }));
@@ -118,9 +107,7 @@ export const project = pgTable("project", {
   leadId: uuid("lead_id")
     .references(() => user.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const issue = pgTable("issue", {
@@ -141,9 +128,7 @@ export const issue = pgTable("issue", {
     .references(() => user.id, { onDelete: "cascade" }),
   order: timestamp("order").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
   // AI-related fields
   embedding: text("embedding"), // JSON string of vector embedding
   aiGenerated: boolean("ai_generated").default(false),
@@ -195,9 +180,7 @@ export const projectStatus = pgTable("project_status", {
   recommendations: text("recommendations"), // JSON array of recommendations
   lastAnalyzed: timestamp("last_analyzed").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 // Vasily AI Actions Log
@@ -226,9 +209,7 @@ export const aiTeamMember = pgTable("ai_team_member", {
   isActive: boolean("is_active").default(true),
   lastActive: timestamp("last_active").defaultNow(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 // Bug Reports
@@ -260,9 +241,7 @@ export const bugReport = pgTable("bug_report", {
   aiAnalysis: text("ai_analysis"), // JSON with AI QA analysis
   aiRecommendations: text("ai_recommendations"), // JSON array of AI recommendations
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 // AI QA Analysis
@@ -305,9 +284,7 @@ export const codeReview = pgTable("code_review", {
   approved: boolean("approved").default(false),
   blockingIssues: text("blocking_issues"), // JSON array of blocking issues
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 // Quality Gates
@@ -326,9 +303,7 @@ export const qualityGate = pgTable("quality_gate", {
   minMaintainabilityScore: integer("min_maintainability_score").default(75),
   autoBlock: boolean("auto_block").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 // AI Analytics
