@@ -701,9 +701,9 @@ export default function AIPersonalityCustomizer() {
                 аналитичность {currentPersonality.traits.analytical}/5
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
