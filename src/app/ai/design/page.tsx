@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 import { AIPageSkeleton } from "@/components/ui/loading-skeleton";
 
