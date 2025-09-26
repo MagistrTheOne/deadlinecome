@@ -241,7 +241,7 @@ export default function AIDesignSystem() {
         </div>
         <Button 
           onClick={() => setActiveTab("generate")}
-          className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
         >
           <Zap className="h-4 w-4 mr-2" />
           Новая система
@@ -337,7 +337,7 @@ export default function AIDesignSystem() {
               <Button 
                 onClick={generateDesignSystem}
                 disabled={loading || !prompt.trim()}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
               >
                 {loading ? (
                   <>
@@ -505,7 +505,7 @@ export default function AIDesignSystem() {
                     <div className="flex-1">
                       <div className="w-full bg-gray-700 rounded-full h-4">
                         <div 
-                          className="bg-gradient-to-r from-red-500 to-green-500 h-4 rounded-full"
+                          className="bg-white h-4 rounded-full"
                           style={{ width: `${analysis.score}%` }}
                         ></div>
                       </div>
@@ -624,7 +624,7 @@ export default function AIDesignSystem() {
                       });
                       setActiveTab("result");
                     }}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
                   >
                     <Component className="h-4 w-4 mr-2" />
                     Использовать шаблон

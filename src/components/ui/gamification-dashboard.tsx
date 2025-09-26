@@ -176,7 +176,7 @@ export default function GamificationDashboard() {
         </div>
         <Button 
           onClick={() => addExperience(50, 'Тестовое действие')}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
         >
           <Zap className="h-4 w-4 mr-2" />
           Получить опыт

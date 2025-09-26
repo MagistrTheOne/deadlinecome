@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Zap, 
   Brain, 
-  CrystalBall, 
+  Eye, 
   Palette, 
   Trophy, 
   Users, 
@@ -30,10 +30,10 @@ import {
 } from "lucide-react";
 
 // Импорты всех компонентов
-import UserProfile from "@/components/ui/user-profile";
-import RoleManagement from "@/components/ui/role-management";
-import VasilyProjectManager from "@/components/ui/vasily-project-manager";
-import RealTimeTodo from "@/components/ui/real-time-todo";
+import { UserProfile } from "@/components/ui/user-profile";
+import { RoleManagement } from "@/components/ui/role-management";
+import { VasilyProjectManager } from "@/components/ui/vasily-project-manager";
+import { RealTimeTodo } from "@/components/ui/real-time-todo";
 import BugTracker from "@/components/ui/bug-tracker";
 import AICodeReviewDashboard from "@/components/ui/ai-code-review-dashboard";
 import AILearningDashboard from "@/components/ui/ai-learning-dashboard";
@@ -86,7 +86,7 @@ export default function PremiumDashboardV2() {
       id: "role-management",
       title: "Управление ролями",
       icon: <Shield className="h-5 w-5" />,
-      component: <RoleManagement workspaceId="demo-workspace" />,
+      component: <RoleManagement workspaceId="demo-workspace" projectId="demo-project" />,
       category: 'core',
       description: "Настройка ролей и разрешений"
     },
@@ -94,7 +94,7 @@ export default function PremiumDashboardV2() {
       id: "vasily-manager",
       title: "Василий - AI Менеджер",
       icon: <Brain className="h-5 w-5" />,
-      component: <VasilyProjectManager />,
+      component: <VasilyProjectManager projectId="demo-project" workspaceId="demo-workspace" />,
       category: 'ai',
       description: "AI-ассистент для управления проектами"
     },
@@ -102,7 +102,7 @@ export default function PremiumDashboardV2() {
       id: "real-time-todo",
       title: "Real-time задачи",
       icon: <Activity className="h-5 w-5" />,
-      component: <RealTimeTodo />,
+      component: <RealTimeTodo projectId="demo-project" workspaceId="demo-workspace" />,
       category: 'core',
       description: "Живые обновления задач"
     },
@@ -202,7 +202,7 @@ export default function PremiumDashboardV2() {
     {
       id: "ai-project-predictor",
       title: "AI Предсказатель",
-      icon: <CrystalBall className="h-5 w-5" />,
+      icon: <Eye className="h-5 w-5" />,
       component: <AIProjectPredictor />,
       category: 'premium',
       description: "Предсказание успеха проектов",
@@ -226,11 +226,11 @@ export default function PremiumDashboardV2() {
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'core': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'ai': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      case 'premium': return 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-400 border-pink-500/30';
-      case 'analytics': return 'bg-green-500/20 text-green-400 border-green-500/30';
-      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+      case 'core': return 'bg-white/10 text-white border-white/20';
+      case 'ai': return 'bg-white/10 text-white border-white/20';
+      case 'premium': return 'bg-white/10 text-white border-white/20';
+      case 'analytics': return 'bg-white/10 text-white border-white/20';
+      default: return 'bg-white/10 text-white border-white/20';
     }
   };
 
@@ -250,11 +250,11 @@ export default function PremiumDashboardV2() {
             </Button>
             
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center border border-white/20">
                 <Zap className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">DeadLine</h1>
+                <h1 className="text-xl font-bold text-white">DeadLine</h1>
                 <p className="text-xs text-white/60">V2.0 Premium</p>
               </div>
             </div>
@@ -321,7 +321,7 @@ export default function PremiumDashboardV2() {
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full justify-start text-left h-auto p-4 ${
                     activeSection === section.id
-                      ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-blue-500/30'
+                      ? 'bg-white/10 text-white border border-white/20'
                       : 'text-white/70 hover:bg-white/5 hover:text-white'
                   }`}
                 >
@@ -333,12 +333,12 @@ export default function PremiumDashboardV2() {
                       <div className="flex items-center gap-2">
                         <span className="font-medium truncate">{section.title}</span>
                         {section.isNew && (
-                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                          <Badge className="bg-white/10 text-white border-white/20 text-xs">
                             NEW
                           </Badge>
                         )}
                         {section.isPro && (
-                          <Badge className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-400 border-pink-500/30 text-xs">
+                          <Badge className="bg-white/10 text-white border-white/20 text-xs">
                             PRO
                           </Badge>
                         )}
@@ -354,15 +354,15 @@ export default function PremiumDashboardV2() {
 
             {/* Sidebar Footer */}
             <div className="p-4 border-t border-white/10">
-              <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-4 border border-blue-500/20">
+              <div className="bg-white/5 rounded-lg p-4 border border-white/20">
                 <div className="flex items-center gap-2 mb-2">
-                  <Star className="h-4 w-4 text-yellow-400" />
-                  <span className="text-sm font-medium">Premium Features</span>
+                  <Star className="h-4 w-4 text-white" />
+                  <span className="text-sm font-medium text-white">Premium Features</span>
                 </div>
                 <p className="text-xs text-white/60 mb-3">
                   Разблокируйте все возможности DeadLine V2.0
                 </p>
-                <Button size="sm" className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
+                <Button size="sm" className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Upgrade
                 </Button>
@@ -427,43 +427,43 @@ function OverviewSection() {
     <div className="space-y-6">
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="bg-black/50 backdrop-blur-xl border border-white/20 shadow-xl">
+        <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 text-sm">Проекты</p>
                 <p className="text-2xl font-bold text-white">{stats.totalProjects}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-blue-400" />
+              <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center border border-white/20">
+                <BarChart3 className="h-6 w-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-black/50 backdrop-blur-xl border border-white/20 shadow-xl">
+        <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 text-sm">Активные задачи</p>
                 <p className="text-2xl font-bold text-white">{stats.activeTasks}</p>
               </div>
-              <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                <Activity className="h-6 w-6 text-green-400" />
+              <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center border border-white/20">
+                <Activity className="h-6 w-6 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-black/50 backdrop-blur-xl border border-white/20 shadow-xl">
+        <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 text-sm">Продуктивность</p>
                 <p className="text-2xl font-bold text-white">{stats.productivity}%</p>
               </div>
-              <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-purple-400" />
+              <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center border border-white/20">
+                <TrendingUp className="h-6 w-6 text-white" />
               </div>
             </div>
           </CardContent>
@@ -471,10 +471,10 @@ function OverviewSection() {
       </div>
 
       {/* Recent Activity */}
-      <Card className="bg-white/5 backdrop-blur-sm border border-white/10">
+      <Card className="bg-black/50 backdrop-blur-sm border border-white/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
-            <Activity className="h-5 w-5 text-blue-400" />
+            <Activity className="h-5 w-5 text-white" />
             Последняя активность
           </CardTitle>
         </CardHeader>
@@ -485,8 +485,8 @@ function OverviewSection() {
               { action: "Добавлен новый AI-ассистент", project: "AI Team", time: "15 мин назад" },
               { action: "Обновлен профиль", project: "User Settings", time: "1 час назад" }
             ].map((item, index) => (
-              <div key={index} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <div key={index} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-white font-medium">{item.action}</p>
                   <p className="text-white/60 text-sm">{item.project}</p>

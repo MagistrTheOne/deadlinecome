@@ -234,7 +234,7 @@ export default function AICodeGenerator() {
         </div>
         <Button 
           onClick={() => setActiveTab("generate")}
-          className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
         >
           <Zap className="h-4 w-4 mr-2" />
           Новый код
@@ -365,7 +365,7 @@ export default function AICodeGenerator() {
               <Button 
                 onClick={generateCode}
                 disabled={loading || !prompt.trim()}
-                className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+                className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
               >
                 {loading ? (
                   <>
@@ -420,11 +420,12 @@ export default function AICodeGenerator() {
                     onClick={() => {
                       const variables: Record<string, string> = {};
                       template.variables.forEach(variable => {
-                        variables[variable] = prompt(`Введите значение для ${variable}:`) || variable;
+                        const value = window.prompt(`Введите значение для ${variable}:`) || variable;
+                        variables[variable] = value;
                       });
                       applyTemplate(template.id, variables);
                     }}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
                   >
                     <Play className="h-4 w-4 mr-2" />
                     Применить шаблон
@@ -566,7 +567,7 @@ export default function AICodeGenerator() {
                         <div className="flex-1">
                           <div className="w-full bg-gray-700 rounded-full h-2">
                             <div 
-                              className="bg-gradient-to-r from-red-500 to-green-500 h-2 rounded-full"
+                              className="bg-white h-2 rounded-full"
                               style={{ width: `${analysis.score}%` }}
                             ></div>
                           </div>

@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  CrystalBall, 
+  Eye, 
   TrendingUp, 
   AlertTriangle, 
   Target, 
@@ -206,14 +206,14 @@ export default function AIProjectPredictor() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <CrystalBall className="h-6 w-6 text-purple-400" />
+            <Eye className="h-6 w-6 text-white" />
             AI Предсказатель Проектов
           </h2>
           <p className="text-white/60">Предсказание успеха и анализ рисков проектов</p>
         </div>
         <Button 
           onClick={() => setActiveTab("predict")}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
         >
           <Zap className="h-4 w-4 mr-2" />
           Новое предсказание
@@ -319,7 +319,7 @@ export default function AIProjectPredictor() {
                 <Button 
                   onClick={predictProject}
                   disabled={loading || !metrics.projectId.trim()}
-                  className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20"
                 >
                   {loading ? (
                     <>
@@ -328,7 +328,7 @@ export default function AIProjectPredictor() {
                     </>
                   ) : (
                     <>
-                      <CrystalBall className="h-4 w-4 mr-2" />
+                      <Eye className="h-4 w-4 mr-2" />
                       Предсказать успех
                     </>
                   )}
@@ -336,7 +336,7 @@ export default function AIProjectPredictor() {
                 <Button 
                   onClick={assessRisks}
                   disabled={loading || !metrics.projectId.trim()}
-                  className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20"
                 >
                   <AlertTriangle className="h-4 w-4 mr-2" />
                   Оценить риски
@@ -547,7 +547,7 @@ export default function AIProjectPredictor() {
                     <div className="flex-1">
                       <div className="w-full bg-gray-700 rounded-full h-4">
                         <div 
-                          className="bg-gradient-to-r from-green-500 to-red-500 h-4 rounded-full"
+                          className="bg-white h-4 rounded-full"
                           style={{ width: `${riskAssessment.overallRiskScore}%` }}
                         ></div>
                       </div>
