@@ -1,3 +1,6 @@
+// @deprecated: Use unified AI client with GigaChatProvider from src/lib/ai/core/
+// This file will be removed after migration to unified AI client is complete
+
 interface GigaChatConfig {
   apiKey: string;
   baseUrl: string;

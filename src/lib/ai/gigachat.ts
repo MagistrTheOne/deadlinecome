@@ -1,3 +1,6 @@
+// @deprecated: Use GigaChatProvider from src/lib/ai/core/providers/gigachat.ts instead
+// This file will be removed after migration to unified AI client is complete
+
 interface GigaChatConfig {
   apiKey: string;
   baseUrl: string;
