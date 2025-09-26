@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { withRateLimit, rateLimiters } from '@/lib/rate-limit';
 import { LoggerService } from '@/lib/logger';
 import { cacheUtils } from '@/lib/cache/redis';
 import { ValidationService } from '@/lib/validation/validator';
 import { DatabaseService } from '@/lib/services/database-service';
+import { createCachedResponse } from '@/lib/api/cache-utils';
 
 // GET /api/dashboard/stats - Получение статистики дашборда
 export async function GET(request: NextRequest) {
@@ -30,7 +31,11 @@ export async function GET(request: NextRequest) {
 
     if (cachedStats) {
       LoggerService.logCache('GET', cacheKey, true);
-      return ValidationService.createSuccessResponse(cachedStats);
+      // Используем новый cached response с ETag
+      return createCachedResponse(cachedStats, request, {
+        maxAge: 60, // 1 minute cache
+        staleWhileRevalidate: 300 // 5 minutes stale
+      });
     }
 
     // Получаем реальные данные из БД
@@ -168,7 +173,16 @@ export async function GET(request: NextRequest) {
     LoggerService.logCache('SET', cacheKey, false);
     LoggerService.logUserAction('dashboard_view', userId, { workspaceId });
 
-    return ValidationService.createSuccessResponse(stats);
+    // Кэшируем на 5 минут и возвращаем с ETag
+    await cacheUtils.cacheApiResponse('dashboard-stats', {
+      userId,
+      workspaceId
+    }, stats, 300);
+
+    return createCachedResponse(stats, request, {
+      maxAge: 60, // 1 minute cache
+      staleWhileRevalidate: 300 // 5 minutes stale
+    });
 
   } catch (error) {
     LoggerService.logError(error as Error, { context: 'dashboard-stats' });

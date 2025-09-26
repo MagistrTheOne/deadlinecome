@@ -1,9 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { aiTeamMember, aiAnalytics } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getWebSocketManager } from "@/lib/websocket-server";
+import {
+  parsePagination,
+  createPaginatedResponse,
+  createCachedResponse,
+  handleIdempotentPost
+} from "@/lib/api/cache-utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,55 +21,59 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const {
-      projectId,
-      analyticsType,
-      timeRange,
-      metrics,
-    } = await request.json();
+    // Используем идемпотентность для создания аналитики
+    return await handleIdempotentPost(request, async () => {
+      const {
+        projectId,
+        analyticsType,
+        timeRange,
+        metrics,
+      } = await request.json();
 
-    if (!projectId || !analyticsType) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
+      if (!projectId || !analyticsType) {
+        throw new Error("Missing required fields");
+      }
 
-    // Находим AI Analytics (Светлана)
-    const aiAnalyst = await db
-      .select()
-      .from(aiTeamMember)
-      .where(eq(aiTeamMember.role, "AI_ANALYTICS"))
-      .limit(1);
+      // Находим AI Analytics (Светлана)
+      const aiAnalyst = await db
+        .select()
+        .from(aiTeamMember)
+        .where(eq(aiTeamMember.role, "AI_ANALYTICS"))
+        .limit(1);
 
-    if (!aiAnalyst.length) {
-      return NextResponse.json({ error: "AI Analytics Expert not found" }, { status: 404 });
-    }
+      if (!aiAnalyst.length) {
+        throw new Error("AI Analytics Expert not found");
+      }
 
-    // Выполняем AI Analytics
-    const analytics = await performAnalytics(analyticsType, timeRange, metrics);
+      // Выполняем AI Analytics
+      const analytics = await performAnalytics(analyticsType, timeRange, metrics);
 
-    // Сохраняем в базу данных
-    const analyticsId = `analytics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    const newAnalytics = await db.insert(aiAnalytics).values({
-      id: analyticsId,
-      projectId,
-      analyticsType: analyticsType as any,
-      data: JSON.stringify(analytics.data),
-      insights: JSON.stringify(analytics.insights),
-      recommendations: JSON.stringify(analytics.recommendations),
-      confidence: analytics.confidence,
-      generatedBy: aiAnalyst[0].id,
-    }).returning();
+      // Сохраняем в базу данных
+      const analyticsId = `analytics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Отправляем уведомление через WebSocket
-    const wsManager = getWebSocketManager();
-    if (wsManager) {
-      wsManager.notifyAnalyticsUpdate(projectId, newAnalytics[0]);
-    }
+      const newAnalytics = await db.insert(aiAnalytics).values({
+        id: analyticsId,
+        projectId,
+        analyticsType: analyticsType as any,
+        data: JSON.stringify(analytics.data),
+        insights: JSON.stringify(analytics.insights),
+        recommendations: JSON.stringify(analytics.recommendations),
+        confidence: analytics.confidence,
+        generatedBy: aiAnalyst[0].id,
+      }).returning();
 
-    return NextResponse.json({
-      success: true,
-      analytics: newAnalytics[0],
+      // Отправляем уведомление через WebSocket
+      const wsManager = getWebSocketManager();
+      if (wsManager) {
+        wsManager.notifyAnalyticsUpdate(projectId, newAnalytics[0]);
+      }
+
+      return {
+        success: true,
+        analytics: newAnalytics[0],
+      };
     });
+
   } catch (error) {
     console.error("Error performing analytics:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -84,25 +94,42 @@ export async function GET(request: NextRequest) {
     const projectId = searchParams.get("projectId");
     const analyticsType = searchParams.get("analyticsType");
 
-    let analytics = await db.select().from(aiAnalytics);
+    // Парсим параметры пагинации
+    const { page, limit, offset } = parsePagination(request, { maxLimit: 20 });
+
+    // Получаем все записи для подсчета total
+    let allAnalytics = await db.select().from(aiAnalytics);
 
     if (projectId) {
-      analytics = analytics.filter(a => a.projectId === projectId);
+      allAnalytics = allAnalytics.filter(a => a.projectId === projectId);
     }
 
     if (analyticsType) {
-      analytics = analytics.filter(a => a.analyticsType === analyticsType);
+      allAnalytics = allAnalytics.filter(a => a.analyticsType === analyticsType);
     }
 
-    return NextResponse.json({
-      success: true,
-      analytics: analytics.map(a => ({
+    const total = allAnalytics.length;
+
+    // Применяем пагинацию
+    const paginatedAnalytics = allAnalytics.slice(offset, offset + limit);
+
+    const result = createPaginatedResponse(
+      paginatedAnalytics.map(a => ({
         ...a,
         data: a.data ? JSON.parse(a.data) : {},
         insights: a.insights ? JSON.parse(a.insights) : [],
         recommendations: a.recommendations ? JSON.parse(a.recommendations) : [],
       })),
+      total,
+      { page, limit }
+    );
+
+    // Возвращаем с ETag и кешированием
+    return createCachedResponse(result, request, {
+      maxAge: 180, // 3 minutes cache for analytics
+      staleWhileRevalidate: 900 // 15 minutes stale
     });
+
   } catch (error) {
     console.error("Error fetching analytics:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
