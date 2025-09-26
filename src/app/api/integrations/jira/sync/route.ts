@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     // Синхронизируем с DeadLine
     const result = await jiraService.syncWithDeadLine(projectKey, deadLineProjectId);
 
-    LoggerService.api.info('Jira sync completed', {
+    LoggerService.logUserAction('jira-sync', 'system', {
       projectKey,
       deadLineProjectId,
       synced: result.synced,
