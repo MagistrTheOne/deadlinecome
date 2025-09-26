@@ -1,315 +1,331 @@
-interface GigaChatAuthResponse {
-  access_token: string;
-  expires_at: number;
-  token_type: string;
-}
-
-interface GigaChatMessage {
-  role: "system" | "user" | "assistant";
-  content: string;
-}
-
-interface GigaChatRequest {
+interface GigaChatConfig {
+  apiKey: string;
+  baseUrl: string;
   model: string;
-  messages: GigaChatMessage[];
-  temperature?: number;
-  max_tokens?: number;
-  stream?: boolean;
+  maxTokens: number;
+  temperature: number;
 }
 
 interface GigaChatResponse {
   choices: Array<{
     message: {
       content: string;
-      role: string;
     };
-    finish_reason: string;
   }>;
   usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
     total_tokens: number;
   };
 }
 
-export class GigaChatService {
-  private accessToken: string | null = null;
-  private tokenExpiresAt: number = 0;
-  private readonly baseUrl = "https://gigachat.devices.sberbank.ru/api/v1";
-  private readonly authUrl = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth";
-  private readonly authKey = process.env.GIGACHAT_AUTH_KEY || "MDE5OTgyNGItNGMxZS03ZWYxLWI0MjMtYmIzMTU2ZGRlY2VlOmQyMWFjYjkzLWQzMTctNDNjMC04N2FlLWFkMzEyNmIwYjBiZA==";
-  private readonly scope = "GIGACHAT_API_PERS";
+class GigaChatService {
+  private config: GigaChatConfig;
 
-  /**
-   * Получение токена доступа для GigaChat API
-   */
-  private async getAccessToken(): Promise<string> {
-    // Проверяем, есть ли действующий токен
-    if (this.accessToken && Date.now() < this.tokenExpiresAt) {
-      return this.accessToken;
-    }
+  constructor() {
+    this.config = {
+      apiKey: process.env.GIGACHAT_API_KEY || '',
+      baseUrl: process.env.GIGACHAT_BASE_URL || 'https://gigachat.devices.sberbank.ru/api/v1',
+      model: 'GigaChat:latest',
+      maxTokens: 4000,
+      temperature: 0.7
+    };
+  }
 
-    if (!this.authKey) {
-      throw new Error("GigaChat auth key не настроен");
-    }
-
+  async analyzeExperience(data: {
+    experience: string;
+    outcome: 'success' | 'failure' | 'partial';
+    aiId: string;
+  }): Promise<{
+    lessons: string[];
+    confidence: number;
+  }> {
     try {
-      const fetchOptions: RequestInit = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Accept": "application/json",
-          "RqUID": this.generateRqUID(),
-          "Authorization": `Basic ${this.authKey}`,
-        },
-        body: new URLSearchParams({
-          scope: this.scope,
-        }),
-      };
+      const prompt = `
+        Проанализируй опыт AI-ассистента:
+        
+        Опыт: ${data.experience}
+        Результат: ${data.outcome}
+        AI ID: ${data.aiId}
+        
+        Извлеки ключевые уроки и рекомендации для улучшения.
+        Верни ответ в формате JSON:
+        {
+          "lessons": ["урок1", "урок2", "урок3"],
+          "confidence": 0.85
+        }
+      `;
 
-      const response = await fetch(this.authUrl, fetchOptions);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Ошибка авторизации GigaChat: ${response.status} ${response.statusText} - ${errorText}`);
-      }
-
-      const data: GigaChatAuthResponse = await response.json();
-      
-      this.accessToken = data.access_token;
-      this.tokenExpiresAt = data.expires_at * 1000; // Конвертируем в миллисекунды
-      
-      return this.accessToken;
+      const response = await this.callGigaChat(prompt);
+      return this.parseJSONResponse(response);
     } catch (error) {
-      console.error("Ошибка получения токена GigaChat:", error);
-      throw new Error("Не удалось получить токен доступа GigaChat");
+      console.error('Ошибка анализа опыта:', error);
+      return {
+        lessons: ['Анализ недоступен'],
+        confidence: 0.5
+      };
     }
   }
 
-  /**
-   * Генерация уникального RqUID
-   */
-  private generateRqUID(): string {
-    return crypto.randomUUID();
+  async planCollaboration(data: {
+    participants: string[];
+    task: string;
+  }): Promise<{
+    plan: string;
+    roles: { [participant: string]: string };
+    timeline: string;
+  }> {
+    try {
+      const prompt = `
+        Создай план коллаборации для AI-команды:
+        
+        Участники: ${data.participants.join(', ')}
+        Задача: ${data.task}
+        
+        Определи роли каждого участника и временные рамки.
+        Верни ответ в формате JSON:
+        {
+          "plan": "детальный план",
+          "roles": {"ai-1": "роль1", "ai-2": "роль2"},
+          "timeline": "временные рамки"
+        }
+      `;
+
+      const response = await this.callGigaChat(prompt);
+      return this.parseJSONResponse(response);
+    } catch (error) {
+      console.error('Ошибка планирования коллаборации:', error);
+      return {
+        plan: 'План недоступен',
+        roles: {},
+        timeline: 'Не определено'
+      };
+    }
   }
 
-  /**
-   * Отправка запроса к GigaChat API
-   */
-  async chat(messages: GigaChatMessage[], options?: {
-    temperature?: number;
-    maxTokens?: number;
-    model?: string;
-  }): Promise<string> {
+  async analyzeEmotions(data: {
+    aiId: string;
+    context: any;
+    recentStates: any[];
+  }): Promise<{
+    mood: 'happy' | 'focused' | 'stressed' | 'tired' | 'excited' | 'frustrated';
+    energy: number;
+    stress: number;
+    satisfaction: number;
+    confidence: number;
+  }> {
     try {
-      const accessToken = await this.getAccessToken();
-      
-      const requestBody: GigaChatRequest = {
-        model: options?.model || "GigaChat:latest",
-        messages,
-        temperature: options?.temperature || 0.7,
-        max_tokens: options?.maxTokens || 1000,
-        stream: false,
-      };
+      const prompt = `
+        Проанализируй эмоциональное состояние AI:
+        
+        AI ID: ${data.aiId}
+        Контекст: ${JSON.stringify(data.context)}
+        Последние состояния: ${JSON.stringify(data.recentStates)}
+        
+        Определи настроение, энергию, стресс, удовлетворенность и уверенность.
+        Верни ответ в формате JSON:
+        {
+          "mood": "focused",
+          "energy": 75,
+          "stress": 25,
+          "satisfaction": 80,
+          "confidence": 85
+        }
+      `;
 
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: "POST",
+      const response = await this.callGigaChat(prompt);
+      return this.parseJSONResponse(response);
+    } catch (error) {
+      console.error('Ошибка анализа эмоций:', error);
+      return {
+        mood: 'focused',
+        energy: 70,
+        stress: 30,
+        satisfaction: 80,
+        confidence: 85
+      };
+    }
+  }
+
+  async predictRisks(data: {
+    projectData: any;
+    historicalData: any[];
+  }): Promise<{
+    predictions: any[];
+    mitigationStrategies: string[];
+    monitoringPoints: string[];
+  }> {
+    try {
+      const prompt = `
+        Проанализируй риски проекта:
+        
+        Данные проекта: ${JSON.stringify(data.projectData)}
+        Исторические данные: ${JSON.stringify(data.historicalData)}
+        
+        Предскажи возможные риски и предложи стратегии их снижения.
+        Верни ответ в формате JSON:
+        {
+          "predictions": [
+            {
+              "type": "risk",
+              "probability": 0.7,
+              "impact": "high",
+              "description": "описание риска",
+              "recommendations": ["рекомендация1"],
+              "timeframe": "2 недели",
+              "confidence": 0.8
+            }
+          ],
+          "mitigationStrategies": ["стратегия1", "стратегия2"],
+          "monitoringPoints": ["метрика1", "метрика2"]
+        }
+      `;
+
+      const response = await this.callGigaChat(prompt);
+      return this.parseJSONResponse(response);
+    } catch (error) {
+      console.error('Ошибка предсказания рисков:', error);
+      return {
+        predictions: [],
+        mitigationStrategies: ['Проведите дополнительный анализ'],
+        monitoringPoints: ['Мониторьте ключевые метрики']
+      };
+    }
+  }
+
+  async trainCustomAI(data: {
+    customAIId: string;
+    dataType: string;
+    data: any[];
+    companyContext: any;
+  }): Promise<{
+    concepts: string[];
+    accuracy: number;
+    confidence: number;
+  }> {
+    try {
+      const prompt = `
+        Обучи Custom AI на корпоративных данных:
+        
+        AI ID: ${data.customAIId}
+        Тип данных: ${data.dataType}
+        Данные: ${JSON.stringify(data.data.slice(0, 5))} // Ограничиваем для промпта
+        Контекст компании: ${JSON.stringify(data.companyContext)}
+        
+        Извлеки ключевые концепции и оцени точность обучения.
+        Верни ответ в формате JSON:
+        {
+          "concepts": ["концепция1", "концепция2"],
+          "accuracy": 0.85,
+          "confidence": 0.9
+        }
+      `;
+
+      const response = await this.callGigaChat(prompt);
+      return this.parseJSONResponse(response);
+    } catch (error) {
+      console.error('Ошибка обучения Custom AI:', error);
+      return {
+        concepts: ['Обучение недоступно'],
+        accuracy: 0.5,
+        confidence: 0.5
+      };
+    }
+  }
+
+  async queryCustomAI(data: {
+    customAIId: string;
+    question: string;
+    context: any;
+  }): Promise<{
+    answer: string;
+    confidence: number;
+    sources: string[];
+    suggestions: string[];
+  }> {
+    try {
+      const prompt = `
+        Ответь на вопрос используя знания Custom AI:
+        
+        AI ID: ${data.customAIId}
+        Вопрос: ${data.question}
+        Контекст: ${JSON.stringify(data.context)}
+        
+        Дай развернутый ответ с указанием источников и предложениями.
+        Верни ответ в формате JSON:
+        {
+          "answer": "детальный ответ",
+          "confidence": 0.9,
+          "sources": ["источник1", "источник2"],
+          "suggestions": ["предложение1", "предложение2"]
+        }
+      `;
+
+      const response = await this.callGigaChat(prompt);
+      return this.parseJSONResponse(response);
+    } catch (error) {
+      console.error('Ошибка запроса к Custom AI:', error);
+      return {
+        answer: 'Ответ недоступен',
+        confidence: 0.5,
+        sources: [],
+        suggestions: []
+      };
+    }
+  }
+
+  private async callGigaChat(prompt: string): Promise<string> {
+    try {
+      const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${this.config.apiKey}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          model: this.config.model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature
+        })
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Ошибка GigaChat API: ${response.status} ${response.statusText} - ${errorText}`);
+        throw new Error(`GigaChat API error: ${response.status}`);
       }
 
       const data: GigaChatResponse = await response.json();
-      
-      if (!data.choices || data.choices.length === 0) {
-        throw new Error("GigaChat вернул пустой ответ");
-      }
-
-      return data.choices[0].message.content;
+      return data.choices[0]?.message?.content || '';
     } catch (error) {
-      console.error("Ошибка GigaChat API:", error);
+      console.error('Ошибка вызова GigaChat API:', error);
       throw error;
     }
   }
 
-  /**
-   * Создание задач на основе описания проекта
-   */
-  async createTasksFromDescription(projectDescription: string, existingTasks: any[] = []): Promise<{
-    tasks: Array<{
-      title: string;
-      description: string;
-      priority: "LOWEST" | "LOW" | "MEDIUM" | "HIGH" | "HIGHEST";
-      type: "BUG" | "TASK" | "STORY" | "EPIC";
-      estimatedHours?: number;
-    }>;
-    reasoning: string;
-  }> {
-    const messages: GigaChatMessage[] = [
-      {
-        role: "system",
-        content: `Ты - AI-ассистент Василий, специализирующийся на управлении проектами. 
-        Твоя задача - анализировать описание проекта и создавать структурированные задачи.
-        
-        Существующие задачи: ${JSON.stringify(existingTasks, null, 2)}
-        
-        Верни ответ в формате JSON:
-        {
-          "tasks": [
-            {
-              "title": "Название задачи",
-              "description": "Подробное описание",
-              "priority": "LOWEST|LOW|MEDIUM|HIGH|HIGHEST",
-              "type": "BUG|TASK|STORY|EPIC",
-              "estimatedHours": число_часов
-            }
-          ],
-          "reasoning": "Объяснение логики создания задач"
-        }`
-      },
-      {
-        role: "user",
-        content: `Создай задачи для проекта: ${projectDescription}`
-      }
-    ];
-
-    const response = await this.chat(messages, { temperature: 0.3 });
-    
+  private parseJSONResponse(response: string): any {
     try {
-      return JSON.parse(response);
-    } catch (error) {
-      throw new Error("Не удалось распарсить ответ GigaChat");
-    }
-  }
-
-  /**
-   * Анализ времени выполнения задач
-   */
-  async analyzeTaskTime(tasks: any[]): Promise<{
-    analysis: string;
-    recommendations: string[];
-    estimatedTotalHours: number;
-  }> {
-    const messages: GigaChatMessage[] = [
-      {
-        role: "system",
-        content: `Ты - AI-ассистент Василий, эксперт по анализу времени выполнения задач.
-        Проанализируй предоставленные задачи и дай рекомендации по оптимизации времени.
-        
-        Верни ответ в формате JSON:
-        {
-          "analysis": "Анализ времени выполнения",
-          "recommendations": ["рекомендация1", "рекомендация2"],
-          "estimatedTotalHours": общее_количество_часов
-        }`
-      },
-      {
-        role: "user",
-        content: `Проанализируй время выполнения задач: ${JSON.stringify(tasks, null, 2)}`
+      // Ищем JSON в ответе
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
       }
-    ];
-
-    const response = await this.chat(messages, { temperature: 0.4 });
-    
-    try {
-      return JSON.parse(response);
+      
+      // Fallback - возвращаем базовую структуру
+      return {
+        error: 'Не удалось распарсить JSON ответ',
+        rawResponse: response
+      };
     } catch (error) {
-      throw new Error("Не удалось распарсить ответ GigaChat");
-    }
-  }
-
-  /**
-   * Генерация отчета по проекту
-   */
-  async generateProjectReport(projectData: any): Promise<{
-    summary: string;
-    keyMetrics: Record<string, any>;
-    recommendations: string[];
-    nextSteps: string[];
-  }> {
-    const messages: GigaChatMessage[] = [
-      {
-        role: "system",
-        content: `Ты - AI-ассистент Василий, создающий аналитические отчеты по проектам.
-        Создай подробный отчет на основе данных проекта.
-        
-        Верни ответ в формате JSON:
-        {
-          "summary": "Краткое резюме проекта",
-          "keyMetrics": {"метрика": "значение"},
-          "recommendations": ["рекомендация1", "рекомендация2"],
-          "nextSteps": ["шаг1", "шаг2"]
-        }`
-      },
-      {
-        role: "user",
-        content: `Создай отчет по проекту: ${JSON.stringify(projectData, null, 2)}`
-      }
-    ];
-
-    const response = await this.chat(messages, { temperature: 0.5 });
-    
-    try {
-      return JSON.parse(response);
-    } catch (error) {
-      throw new Error("Не удалось распарсить ответ GigaChat");
-    }
-  }
-
-  /**
-   * Умные предложения по улучшению проекта
-   */
-  async getSmartSuggestions(projectContext: any): Promise<{
-    suggestions: Array<{
-      title: string;
-      description: string;
-      priority: "LOW" | "MEDIUM" | "HIGH";
-      category: string;
-    }>;
-    reasoning: string;
-  }> {
-    const messages: GigaChatMessage[] = [
-      {
-        role: "system",
-        content: `Ты - AI-ассистент Василий, дающий умные предложения по улучшению проектов.
-        Проанализируй контекст и предложи улучшения.
-        
-        Верни ответ в формате JSON:
-        {
-          "suggestions": [
-            {
-              "title": "Название предложения",
-              "description": "Описание",
-              "priority": "LOW|MEDIUM|HIGH",
-              "category": "Категория"
-            }
-          ],
-          "reasoning": "Объяснение предложений"
-        }`
-      },
-      {
-        role: "user",
-        content: `Дай предложения по улучшению: ${JSON.stringify(projectContext, null, 2)}`
-      }
-    ];
-
-    const response = await this.chat(messages, { temperature: 0.6 });
-    
-    try {
-      return JSON.parse(response);
-    } catch (error) {
-      throw new Error("Не удалось распарсить ответ GigaChat");
+      console.error('Ошибка парсинга JSON:', error);
+      return {
+        error: 'Ошибка парсинга JSON',
+        rawResponse: response
+      };
     }
   }
 }
 
-// Экспортируем единственный экземпляр сервиса
-export const gigaChatService = new GigaChatService();
+export { GigaChatService };

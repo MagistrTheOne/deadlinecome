@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* config options here */
-  experimental: {
-    serverComponentsExternalPackages: ['ws']
-  },
+  serverExternalPackages: ['ws'],
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals.push('ws');

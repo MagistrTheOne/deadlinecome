@@ -31,6 +31,10 @@ import AITeamDashboard from "@/components/ui/ai-team-dashboard";
 import BugTracker from "@/components/ui/bug-tracker";
 import AICodeReviewDashboard from "@/components/ui/ai-code-review-dashboard";
 import { UserProfile } from "@/components/ui/user-profile";
+import AILearningDashboard from "@/components/ui/ai-learning-dashboard";
+import AIMarketplaceDashboard from "@/components/ui/ai-marketplace-dashboard";
+import IndustryTemplatesDashboard from "@/components/ui/industry-templates-dashboard";
+import GlobalTeamsDashboard from "@/components/ui/global-teams-dashboard";
 import { Plus, Users, FolderOpen, BarChart3, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -286,6 +290,26 @@ export default function DashboardPage() {
       {/* AI Code Review Dashboard */}
       <div className="mt-8">
         <AICodeReviewDashboard />
+      </div>
+
+      {/* AI Learning System */}
+      <div className="mt-8">
+        <AILearningDashboard />
+      </div>
+
+      {/* AI Marketplace */}
+      <div className="mt-8">
+        <AIMarketplaceDashboard />
+      </div>
+
+      {/* Industry Templates */}
+      <div className="mt-8">
+        <IndustryTemplatesDashboard />
+      </div>
+
+      {/* Global Teams */}
+      <div className="mt-8">
+        <GlobalTeamsDashboard />
       </div>
 
     </DashboardLayout>
